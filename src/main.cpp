@@ -1,7 +1,9 @@
 /* cSpell:disable */
 // #define DEBUG_02
 // #define DEBUG_RANDOM
-
+#ifndef ARDUINO_ARCH_RP2040
+  #error works only on earlephilhower core
+#endif
 #include "Arduino.h"
 #include <stdio.h>
 #include "hardware/gpio.h"
@@ -11,65 +13,44 @@
 #include "Free_Fonts.h"
 #include <RingBufCPP.h>
 #include <ptScheduler.h>
-
-#include <SPI.h>
+// #include <SPI.h>
 #include <SD.h>
-#define PIN_SD_CS 17
-
-/* 
-#if !defined(ARDUINO_ARCH_RP2040)
-  #error For RP2040 only
-#else
-//  #include <SPI.h>
-//  #include <RP2040_SD.h>
-#endif
-
-#if defined(ARDUINO_ARCH_MBED)
-  
-  #define PIN_SD_MOSI       PIN_SPI_MOSI
-  #define PIN_SD_MISO       PIN_SPI_MISO
-  #define PIN_SD_SCK        PIN_SPI_SCK
-  #define PIN_SD_SS         PIN_SPI_SS
-
-#else
-
-  #define PIN_SD_MOSI       PIN_SPI0_MOSI
-  #define PIN_SD_MISO       PIN_SPI0_MISO
-  #define PIN_SD_SCK        PIN_SPI0_SCK
-  #define PIN_SD_SS         PIN_SPI0_SS
-  
-#endif */
-#define _RP2040_SD_LOGLEVEL_       4
 
 #include "pic.h"
 #include "counter.h"
 #include "pitches.h"
 #include "songs.h"
-
-#define BuzzerPin 6
-#define BUZZ01
+#include "settings.h"
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 TFT_eSprite scrollText1  = TFT_eSprite(&tft);
+
+// table with digit pointers for a reel data
+const unsigned short *space = (unsigned short *)reel;
+const unsigned short *qq = (unsigned short *)reel +((gHeight-1)*gWidth*1);
+const unsigned short *digits[] = {
+  (unsigned short *)reel+((gHeight-1)*gWidth*13), // 0
+  (unsigned short *)reel+((gHeight-1)*gWidth* 3), // 1
+  (unsigned short *)reel+((gHeight-1)*gWidth* 4), // 2
+  (unsigned short *)reel+((gHeight-1)*gWidth* 5), // 3
+  (unsigned short *)reel+((gHeight-1)*gWidth* 6), // 4
+  (unsigned short *)reel+((gHeight-1)*gWidth* 7), // 5
+  (unsigned short *)reel+((gHeight-1)*gWidth* 8), // 6
+  (unsigned short *)reel+((gHeight-1)*gWidth*10), // 7
+  (unsigned short *)reel+((gHeight-1)*gWidth*11), // 8
+  (unsigned short *)reel+((gHeight-1)*gWidth*12), // 9
+};
+const unsigned short *ptr=(unsigned short *)reel;
+const unsigned short *ptr_start = ptr + ((gHeight-1)*gWidth*  3); // 1
+const unsigned short *ptr_stop  = ptr + ((gHeight-1)*gWidth*  9); // 1
+const unsigned int top_pos = (gHeight-1)*gWidth*6;
 
 ptScheduler  pt_random_waiting_for_press = ptScheduler(PT_TIME_2S);
 ptScheduler  pt_random_display = ptScheduler(PT_TIME_20MS);
 ptScheduler  pt_song = ptScheduler(1);
 
-int song;
-
-
-#define lx 26
-#define ly 24
-#define rx 90
-#define ry 24
-
-#define LED_PIN LED_BUILTIN
-#define pinBut 28
-#define pinA 27
-#define pinB 26
-volatile byte xstate = LOW;
-volatile long secuenceN = 0;
+volatile byte xstate = LOW; // change build in led when a button is pressed
+// volatile long secuenceN = 0;
 
 typedef enum {pin_fall, pin_reis} pinState_t;
 
@@ -112,7 +93,6 @@ RingBufCPP<struct Event, MAX_NUM_ELEMENTS> buf;
 unsigned long stime = to_ms_since_boot(get_absolute_time());
 const int delayTime = 20; // Delay for every push button may vary
 
-
 void gpio_callback(uint gpio, uint32_t events) {
 static volatile int last_delta = 0;
 static volatile int last_seq = 0;
@@ -121,23 +101,21 @@ static volatile int last_cycles = 0;
 
   struct Event e;
   if (gpio == pinBut) {
+    // debouncing press button, actually done on hardware layer
+    // don't like to debounced edges
     if ((to_ms_since_boot(get_absolute_time())-stime)>delayTime) {
-        // Recommend to not to change the position of this line
-        stime = to_ms_since_boot(get_absolute_time());
+        stime = to_ms_since_boot(get_absolute_time()); 
         
-        // Interrupt function lines
+        // Interrupt function lines for press button
+        // change built in LED status, jut for fun
         xstate = !xstate;
         gpio_put(LED_PIN, xstate);
-
-        // e.pinState = events & (GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE);
-        // if (events & (GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE)) {
-        //  e.index = xindex++;
-        //  e.pinState = events & (GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE);
-          e.direction = events & GPIO_IRQ_EDGE_FALL? e_down: events & GPIO_IRQ_EDGE_RISE ? e_up: e_none;
-          e.pinNum = gpio;
-          e.timestamp = millis();
-          buf.add(e);  // Add it to the buffer          
-        //}
+        
+        // store the edge of the button signal press vs. release
+        e.direction = events & GPIO_IRQ_EDGE_FALL? e_down: events & GPIO_IRQ_EDGE_RISE ? e_up: e_none;
+        e.pinNum = gpio;
+        e.timestamp = millis();
+        buf.add(e);  // Add it to the ring buffer
     }
   } else if (gpio == pinA || gpio == pinB ) {
 
@@ -222,41 +200,6 @@ state_type key_logic(state_type old_state) {
   }
   return new_state;
 }
-
-// table with digit pointers
-  const unsigned short *space = (unsigned short *)reel;
-  const unsigned short *qq = (unsigned short *)reel +((gHeight-1)*gWidth*1);
-  const unsigned short *digits[] = {
-  (unsigned short *)reel+((gHeight-1)*gWidth*13), // 0
-  (unsigned short *)reel+((gHeight-1)*gWidth* 3), // 1
-  (unsigned short *)reel+((gHeight-1)*gWidth* 4), // 2
-  (unsigned short *)reel+((gHeight-1)*gWidth* 5), // 3
-  (unsigned short *)reel+((gHeight-1)*gWidth* 6), // 4
-  (unsigned short *)reel+((gHeight-1)*gWidth* 7), // 5
-  (unsigned short *)reel+((gHeight-1)*gWidth* 8), // 6
-  (unsigned short *)reel+((gHeight-1)*gWidth*10), // 7
-  (unsigned short *)reel+((gHeight-1)*gWidth*11), // 8
-  (unsigned short *)reel+((gHeight-1)*gWidth*12), // 9
-};
-
-  const unsigned short *ptr=(unsigned short *)reel;
-  const unsigned short *ptr_start = ptr + ((gHeight-1)*gWidth*  3); // 1
-  const unsigned short *ptr_stop  = ptr + ((gHeight-1)*gWidth*  9); // 1
-  const unsigned int top_pos = (gHeight-1)*gWidth*6;
-  
-  const char SlowDownEl = 10;
-  unsigned int slowdown[SlowDownEl][2]={
-    { 8, 10}, // 0 10
-    { 8, 15}, // 1 15
-    { 7, 20}, // 2
-    { 7, 25}, // 3
-    { 6, 30}, // 4
-    { 6, 35}, // 5  
-    { 6, 40}, // 6
-    { 1,  0}, // 7
-    { 1,  0}, // 8
-    { 5,  1}  // 9 SlowDownEl-1
-  };
 
 u_int32_t statTabL[6];
 u_int32_t statTabR[6];
@@ -422,14 +365,11 @@ void drawChart(u_int32_t* statTabX, int maxIndex, int deltaIndex) {
 }
 
 void genTone() {
-  #ifdef BUZZ01
     tone(BuzzerPin,NOTE_G2, 10);
-  #else
-    int noteX = random(31, 3000);
-    tone(BuzzerPin, noteX, 10);
-  #endif
 }
 
+// index in song note score
+int noteIndex;
 
 void genSignal(int songTab[][2], int songLen, int tempo, int &note) {
   int noteDuration, devider;
@@ -441,7 +381,6 @@ void genSignal(int songTab[][2], int songLen, int tempo, int &note) {
     if (devider < 0) {
       noteDuration *= 1.5;
     }
-    
     tone(BuzzerPin, songTab[note][0], noteDuration*0.9);
     note = (note +1) % songLen;
     pt_song.setInterval(noteDuration*1000);
@@ -449,6 +388,7 @@ void genSignal(int songTab[][2], int songLen, int tempo, int &note) {
 }
 
 File myFile;
+boolean sdCardOK;
 
 void setup()
 {
@@ -456,42 +396,11 @@ void setup()
   // while (!Serial);
   delay(2000);
 
-#if defined(ARDUINO_ARCH_MBED)
-  Serial.print("Starting SD Card Files on MBED ");
-#else
-  Serial.print("Starting SD Card Files on ");
-#endif
-
-  // Serial.println(BOARD_NAME);
-  // Serial.print("SCK = ");   Serial.println(PIN_SD_SCK);
-  // Serial.print("MOSI = ");  Serial.println(PIN_SD_MOSI);
-  // Serial.print("MISO = ");  Serial.println(PIN_SD_MISO);
-
-
-  if (!SD.begin(PIN_SD_CS, SPI))
-  {
-    Serial.println("Initialization failed!");
-    return;
-  }
-  Serial.println("SD Initialization done.");
-
-
-  tft.init();
-  //tft.begin();
-  tft.setRotation(3);  // landscape
-
+  tft.init();   // old tft.begin();
+  tft.setRotation(3);  // landscape upside down
   tft.fillScreen(TFT_BLACK);
-
-  // Swap the colour byte order when rendering
   tft.setSwapBytes(true);
-  
   tft.pushImage(0, 0, counterWidth, counterHeight, counter);
- 
-
-
-  // Prepare buttons handling
-  pinMode(LED_PIN, OUTPUT);
-  
   #ifndef DEBUG_02
   for (unsigned long i=0; i<=(gHeight-1)*gWidth*1; i+=gWidth*3) {
     tft.pushImage(lx, ly, gWidth, gHeight, space+i);
@@ -500,6 +409,8 @@ void setup()
   }
   #endif
 
+  // Prepare pins and buttons handling
+  pinMode(LED_PIN, OUTPUT);
   pinMode(pinBut, INPUT_PULLUP);
   pinMode(pinA, INPUT_PULLUP);
   pinMode(pinB, INPUT_PULLUP);
@@ -507,16 +418,11 @@ void setup()
   gpio_set_irq_enabled(pinA, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
   gpio_set_irq_enabled(pinB, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
 
-  #define ledSize  16
-  #define ledPosX 135
-  #define ledPosY   0
-
-
-  #define fileName  "newtest0.txt"
   char writeData[]  = "Testing writing to " fileName;
   
   // open the file. note that only one file can be open at a time,
   // so you have to close this one before opening another.
+  sdCardOK = SD.begin(PIN_SD_CS, SPI);
   myFile = SD.open(fileName, FILE_WRITE);
 
   // if the file opened okay, write to it:
@@ -538,35 +444,27 @@ void setup()
   }
 
   // re-open the file for reading:
-  myFile = SD.open(fileName, FILE_READ);
-  
-  if (myFile) 
-  {
-    Serial.print("Reading from "); Serial.println(fileName);
-    Serial.println("===============");
-
-    // read from the file until there's nothing else in it:
-    while (myFile.available()) 
+  if (!SD.open(fileName, FILE_READ)) {
+    if (myFile) 
     {
-      Serial.write(myFile.read());
+      while (myFile.available()) 
+      {
+        Serial.write(myFile.read());
+      }
+      myFile.close();
+    } 
+    else 
+    {
+      // if the file didn't open, print an error:
+      Serial.print("Error opening "); Serial.println(fileName);
     }
-
-    // close the file:
-    myFile.close();
-
-    Serial.println("===============");
-  } 
-  else 
-  {
-    // if the file didn't open, print an error:
-    Serial.print("Error opening "); Serial.println(fileName);
+  } else {
+    sdCardOK = false;
   }
 
 }
 
-const char MessageText1[] PROGMEM = "Press START to continue. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
-const char MessageText2[] PROGMEM = " [%d] L: %d %.0f%%  |  R: %d %.0f%% ";
-#define MessageLen 128 /*length of message*/
+
 
 
 void loop()
@@ -585,8 +483,6 @@ void loop()
   int loop_j;
   bool loop_z;
   bool loop_w;
-
-
 
   char MessageStr[MessageLen];
 
@@ -724,15 +620,6 @@ void loop()
         }
       }
       #endif
-      #define rRX  30 /* result box upper x*/
-      #define rRY  15 /* result box uper y*/
-      #define rWi  96 /* result box width */
-      #define rHi  62 /* result box high */
-      #define mHi  47 /* minimal digit size */
-      #define dSt  18 /* digit start line*/
-
-      #define rBl 128 /* scroll bar lenghth*/
-      #define rBh  20 /* scroll bar high */
 
       delay(1000);
       tft.pushImage(lx, ly, gWidth, gHeight, space);
@@ -795,7 +682,7 @@ void loop()
         pt_song.setSequenceRepetition(0); // repeat 4ever
       }
       pt_song.enable();
-      song = 0;
+      noteIndex = 0;
 
       current_state = random_display;      
       key_clean();      
@@ -831,25 +718,16 @@ void loop()
       }
       // Play a song
       if (rndSum == 7) {
-        genSignal(song4, Song4Len, Song4Tempo, song);
+        genSignal(song4, Song4Len, Song4Tempo, noteIndex);
       } else {
-        genSignal(song2, Song2Len, Song2Tempo, song);
+        genSignal(song2, Song2Len, Song2Tempo, noteIndex);
       }
     }
     else if (current_state == show_statistics) {
 
-
       pt_song.disable();
 
       #ifndef KEEP_
-      #define sRX   7 /* stat box upper x*/
-      #define sRY  20 /* stat box uper y*/
-      #define sWi 143 /* stat box width */
-      #define sHi  80 /* stat box high */
-      #define sXY  10 /* margin of 0,0 from boarders*/
-      #define sBw   5 /* bar width */
-      #define sBm   5 /* gap between bars */
-
 
       // scrollText1.deleteSprite();
       tft.pushImage(0, 0, counterWidth, counterHeight, counter);
