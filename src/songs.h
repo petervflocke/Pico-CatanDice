@@ -1,4 +1,10 @@
+/* cSpell:disable */
+#include "Arduino.h"
+#ifndef SONGS_H
+#define SONGS_H
 #include "pitches.h"
+#define BuzzerPin 6
+// index in song note score
 
 #define Song1Tempo 180
 int song1[][2] PROGMEM={
@@ -62,3 +68,5 @@ int song5[][2] PROGMEM= {
   {NOTE_G6, 3},
 };
 #define Song5Len sizeof(song5)/8
+
+#endif

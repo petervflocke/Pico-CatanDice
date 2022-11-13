@@ -16,11 +16,12 @@
 // #include <SPI.h>
 #include <SD.h>
 
+#include "settings.h"
 #include "pic.h"
 #include "counter.h"
-#include "pitches.h"
 #include "songs.h"
-#include "settings.h"
+// #include "pitches.h"
+#include "logger.h"
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 TFT_eSprite scrollText1  = TFT_eSprite(&tft);
@@ -213,12 +214,12 @@ u_int32_t statTabS[11];
 u_int32_t statCnt=0;
 
 
-void seedrnd(unsigned long t){
+void seedrnd(unsigned long t, uint32_t &randomVal){
   
 #define RANDOM_01
 #ifdef RANDOM_01
-  uint32_t randomVal = 0;
   uint32_t random_bit;
+  randomVal = 0;
   volatile uint32_t *rnd_reg = (uint32_t *)(ROSC_BASE + ROSC_RANDOMBIT_OFFSET);
 
   for (int k = 0; k < 32; k++) {
@@ -228,7 +229,7 @@ void seedrnd(unsigned long t){
     }
     randomVal = (randomVal << 1) | random_bit;
   }
-  randomVal *= t*abs(analogRead(0)-analogRead(1));
+  // randomVal *= t*abs(analogRead(analog0)+analogRead(analog1));
 
   // secuenceN += 1;
   // Serial.print(secuenceN); 
@@ -251,7 +252,7 @@ uint32_t randomVal = 0x811c9dc5;
     randomVal *= 0x01000193;
   }
 #endif
-  randomVal += t+abs(analogRead(0)-analogRead(1));
+  randomVal += t+abs(analogRead(analog0)-analogRead(analog1));
   randomSeed(randomVal);    
 }
 
@@ -364,14 +365,14 @@ void drawChart(u_int32_t* statTabX, int maxIndex, int deltaIndex) {
   }  
 }
 
+void genTone();
+void genSignal(ptScheduler &pt_song, int songTab[][2], int songLen, int tempo, int &note);
+
 void genTone() {
     tone(BuzzerPin,NOTE_G2, 10);
 }
 
-// index in song note score
-int noteIndex;
-
-void genSignal(int songTab[][2], int songLen, int tempo, int &note) {
+void genSignal(ptScheduler &pt_song, int songTab[][2], int songLen, int tempo, int &note) {
   int noteDuration, devider;
   int wholenote = (60000 * 4) / tempo;  
   
@@ -387,8 +388,8 @@ void genSignal(int songTab[][2], int songLen, int tempo, int &note) {
   }
 }
 
-File myFile;
 boolean sdCardOK;
+int noteIndex;
 
 void setup()
 {
@@ -418,54 +419,76 @@ void setup()
   gpio_set_irq_enabled(pinA, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
   gpio_set_irq_enabled(pinB, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
 
-  char writeData[]  = "Testing writing to " fileName;
-  
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
+
   sdCardOK = SD.begin(PIN_SD_CS, SPI);
-  myFile = SD.open(fileName, FILE_WRITE);
-
-  // if the file opened okay, write to it:
-  if (myFile) 
-  {
-    Serial.print("Writing to "); Serial.print(fileName); 
-    Serial.print(" ==> "); Serial.println(writeData);
-
-    myFile.println(writeData);
-    
-    // close the file:
-    myFile.close();
-    Serial.println("done.");
-  } 
-  else 
-  {
-    // if the file didn't open, print an error:
-    Serial.print("Error opening "); Serial.println(fileName);
+  if (sdCardOK) {
+    sdCardOK = myLogger(SD);
+  }
+  if (sdCardOK) {
+    sdCardOK = saveResult(SD, 1, 0, 0, 0, 0, 0, 0, millis());
   }
 
-  // re-open the file for reading:
-  if (!SD.open(fileName, FILE_READ)) {
-    if (myFile) 
-    {
-      while (myFile.available()) 
-      {
-        Serial.write(myFile.read());
+  /* bool headerOK = false;
+  char lineBuf[CSVMessageLen];
+  sdCardOK = SD.begin(PIN_SD_CS, SPI);
+  if (sdCardOK) {
+    myFile = SD.open(fileName, FILE_READ);
+    if (myFile) {
+      if (readLine(myFile, lineBuf, CSVMessageLen)) {
+        Serial.print("File OK: "); Serial.println(fileName);
+        Serial.println(lineBuf);
       }
       myFile.close();
-    } 
-    else 
-    {
-      // if the file didn't open, print an error:
-      Serial.print("Error opening "); Serial.println(fileName);
+      Serial.println("Comapre header: "); Serial.println(fileName);
+      if (strcmp(lineBuf, CSVHeader) != 0) {
+        headerOK = false;
+        Serial.println("Header BAD:");
+        Serial.print("file  :");stringdump(lineBuf);
+        Serial.println();
+        Serial.print("header:");stringdump((char *)CSVHeader);
+        Serial.println();
+      } else headerOK = true;
     }
-  } else {
-    sdCardOK = false;
   }
+  if (sdCardOK && (!headerOK)) {
+    // if the file didn't open, try to create one
+    Serial.print("Creating a proper file: "); Serial.println(fileName);
+    // try to remove
+    SD.remove(fileName);
+    myFile = SD.open(fileName, FILE_WRITE);
+    if (myFile) {
+      myFile.write(CSVHeader);
+      myFile.write("\n");
+      myFile.close();
+    }
+    else {
+      Serial.print("New file cannot be created"); Serial.println(fileName);  
+      sdCardOK = false;
+    }
+  } */
+
+
+  // File myFile;
+  // if (sdCardOK) {
+  //   snprintf_P(lineBuf, CSVMessageLen, 
+  //         CSVMessage,
+  //         1, 0, 0, 0, 0, 1234, 5678, 123456789, millis()
+  //   );
+  //   Serial.print("Data:"); Serial.println(lineBuf);
+  //   // Serial.print("Str :"); stringdump(lineBuf);
+  //   myFile = SD.open(fileName, FILE_WRITE);
+  //   if (myFile) {
+  //     myFile.write(lineBuf, strlen(lineBuf));
+  //     myFile.close();
+  //   } 
+
+  // while (true) {
+  //   Serial.print("Analog0 : "); Serial.print(analogRead(A0));
+  //   Serial.print("   Analog1 : "); Serial.println(analogRead(A1));
+  //   delay(250);
+  // }
 
 }
-
-
-
 
 void loop()
 { 
@@ -475,6 +498,8 @@ void loop()
 
   int rnd1; 
   int rnd2;
+  uint32_t seedL;
+  uint32_t seedR;
   int rndSum;
   int messageGLen;
   int messageIndex;
@@ -488,8 +513,9 @@ void loop()
 
   uint16_t resultFrameColor;
 
-  unsigned long duration;
-  duration = millis();
+  unsigned long duration1;
+  unsigned long duration2;
+  duration1 = millis();
 
   state_type current_state = random_waiting_for_press;
   state_type former_state = current_state;
@@ -507,12 +533,12 @@ void loop()
       former_state = current_state;
     }
 
-// current_state = show_statistics;
     if (current_state == random_waiting_for_press) {
       if (pt_random_waiting_for_press.call()) {
-        tone(BuzzerPin,NOTE_G2);
-        delay(10);
-        tone(BuzzerPin,NOTE_GS2,10);
+        tone(BuzzerPin,NOTE_G2, 6);
+        delay(5);
+        tone(BuzzerPin,NOTE_GS2, 5);
+        delay(5);
       }
 
       tft.pushImage(lx, ly, gWidth, gHeight, qq+(random(100)%2?1:-1)*random(4)*gWidth);
@@ -524,17 +550,17 @@ void loop()
     } 
     else if ( (current_state == random_waiting_for_release) ) {
       if (first_run) {
-        duration = (millis()-duration);
-        seedrnd(duration);
+        duration1 = (millis()-duration1);
+        seedrnd(duration1, seedL);
         rnd1 = random(1, 7);
         
         #ifdef DEBUG_RANDOM
         Serial.print("1. random -> "); Serial.println(rnd1);
-        // Serial.print(duration); Serial.print(" -> ");
+        // Serial.print(duration1); Serial.print(" -> ");
         // Serial.println(rnd1);
         #endif
 
-        duration = millis();
+        duration2 = millis();
         steps = slowdown[0][0];
         scrollDelay = slowdown[0][1];
         #ifndef DEBUG_02
@@ -567,12 +593,12 @@ void loop()
     }
     else if (current_state == random_slow_down) {
       //tft.pushImage(0, 0, counterWidth, ledSize+1, counter);
-      duration = (millis()-duration)+random(analogRead(0));
-      seedrnd(duration);
+      duration2 = (millis()-duration2)+random(analogRead(analog0));
+      seedrnd(duration2, seedR);
       rnd2 = random(1, 7);
       #ifdef DEBUG_RANDOM
       Serial.print("2. random -> "); Serial.println(rnd2);
-      // Serial.print(duration); Serial.print(" -> ");  
+      // Serial.print(duration1); Serial.print(" -> ");  
       // Serial.println(rnd2);
       #endif
       steps = slowdown[0][0];
@@ -620,6 +646,10 @@ void loop()
         }
       }
       #endif
+
+      if (sdCardOK) {
+        sdCardOK = saveResult(SD, 0, rnd1, rnd2, duration1, duration2, seedL, seedR, millis());
+      }
 
       delay(1000);
       tft.pushImage(lx, ly, gWidth, gHeight, space);
@@ -718,9 +748,9 @@ void loop()
       }
       // Play a song
       if (rndSum == 7) {
-        genSignal(song4, Song4Len, Song4Tempo, noteIndex);
+        genSignal(pt_song, song4, Song4Len, Song4Tempo, noteIndex);
       } else {
-        genSignal(song2, Song2Len, Song2Tempo, noteIndex);
+        genSignal(pt_song, song2, Song2Len, Song2Tempo, noteIndex);
       }
     }
     else if (current_state == show_statistics) {
@@ -795,7 +825,7 @@ void loop()
       tft.pushImage(0, 0, counterWidth, counterHeight, counter);
       current_state = random_waiting_for_press;
       delay(100);
-      duration = (millis()-duration);
+      duration1 = millis()+analogRead(analog1);
       key_clean();
     }
   }

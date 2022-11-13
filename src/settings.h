@@ -1,12 +1,14 @@
 /* cSpell:disable */
+
 // Input / output pins
-#define BuzzerPin 6
 #define LED_PIN LED_BUILTIN
 
 // Rotary switch
-#define pinBut 28
-#define pinA 27
-#define pinB 26
+#define pinBut 7
+#define pinA   8
+#define pinB   9
+#define analog0 26
+#define analog1 27
 
 // Select for SD card reader
 #define PIN_SD_CS 17
@@ -60,12 +62,6 @@ unsigned int slowdown[SlowDownEl][2]={  // lines to move in one stepo, delay in 
 { 5,  1}  // 9 SlowDownEl-1
 };
 
-// name of the file on SD card to store results
-#define fileName  "dice.csv"
-
 
 const char MessageText1[] PROGMEM = "Press START to continue. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
-const char Header[] PROGMEM = "1.NewGame; 2.LeftRandom; 3.RightRandom; 4.DelayBefore; 5.DelayAfter; 6.Analog0; 7.Analog1; 8.RandomSeed; 9.Time\n";
-const char CSVMessage[] PROGMEM = "%d;%d;%d;%010d;%010d;%04d;%04d;%010d;%010d;\n";
 #define MessageLen 128 /*length of message*/
-#define CSVMessageLen 128 /* actually only 61 */
