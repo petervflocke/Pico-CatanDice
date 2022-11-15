@@ -1,5 +1,6 @@
 /* cSpell:disable */
 #include "Arduino.h"
+
 #ifndef SONGS_H
 #define SONGS_H
 #include "pitches.h"
@@ -7,7 +8,7 @@
 // index in song note score
 
 #define Song1Tempo 180
-int song1[][2] PROGMEM={
+const int song1[][2] PROGMEM={
   {NOTE_C5, 4},   // 0
   {NOTE_G4, 4},   // 1
   {NOTE_E4, 4},   // 2
@@ -24,7 +25,7 @@ int song1[][2] PROGMEM={
 #define Song1Len sizeof(song1)/8
 
 #define Song2Tempo 180
-int song2[][2] PROGMEM= {           // Nokia tune
+const int song2[][2] PROGMEM= {           // Nokia tune
   {NOTE_E5, 8},   // 0
   {NOTE_D5, 8},   // 1
   {NOTE_FS4, 4},   // 2
@@ -43,14 +44,14 @@ int song2[][2] PROGMEM= {           // Nokia tune
 
 
 #define Song3Tempo 180
-int song3[][2] PROGMEM= {
+const int song3[][2] PROGMEM= {
   {NOTE_B5, 8},   // 0
   {NOTE_E6, 16},   // 1
 };
 #define Song3Len sizeof(song3)/8
 
 #define Song4Tempo 180
-int song4[][2] PROGMEM= {
+const int song4[][2] PROGMEM= {
   {NOTE_E6, 8}, 
   {NOTE_G6, 8}, 
   {NOTE_E7, 8},
@@ -62,11 +63,14 @@ int song4[][2] PROGMEM= {
 
 
 #define Song5Tempo 180
-int song5[][2] PROGMEM= {
+const int song5[][2] PROGMEM= {
   {NOTE_G4, 3}, 
   {NOTE_G5, 3}, 
   {NOTE_G6, 3},
 };
 #define Song5Len sizeof(song5)/8
+
+void genTone();
+void genSignal(ptScheduler &pt_song, const int songTab[][2], int songLen, int tempo, int &note);
 
 #endif

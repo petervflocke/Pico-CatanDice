@@ -1,6 +1,12 @@
 /* cSpell:disable */
+
+// Select for SD card reader
+#define PIN_SD_CS 17
+
 // name of the file on SD card to store results
 #define fileName  "dice.csv"
+
+extern boolean sdCardOK;
 
 const char CSVHeader[]  PROGMEM = "1.NewGame, 2.LeftRandom, 3.RightRandom, 4.LeftDelay, 5.RightDelay, 6.RandomSeedL, 7.RandomSeedR, 8.Time";
 const char CSVMessage[] PROGMEM = "%ld,%ld,%ld,%010lu,%010lu,%010lu,%010lu,%010lu\n";

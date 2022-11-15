@@ -1,17 +1,6 @@
 /* cSpell:disable */
-
-// Input / output pins
-#define LED_PIN LED_BUILTIN
-
-// Rotary switch
-#define pinBut 7
-#define pinA   8
-#define pinB   9
-#define analog0 26
-#define analog1 27
-
-// Select for SD card reader
-#define PIN_SD_CS 17
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 // define posistion of the graphic elements
 // position of the left and right reel of digits
@@ -45,8 +34,6 @@
 #define sBw   5 /* bar width */
 #define sBm   5 /* gap between bars */
 
-
-
 // how to slow down the real
 const char SlowDownEl = 10;
 unsigned int slowdown[SlowDownEl][2]={  // lines to move in one stepo, delay in ms
@@ -65,3 +52,5 @@ unsigned int slowdown[SlowDownEl][2]={  // lines to move in one stepo, delay in 
 
 const char MessageText1[] PROGMEM = "Press START to continue. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
 #define MessageLen 128 /*length of message*/
+
+#endif
