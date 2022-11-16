@@ -1,5 +1,4 @@
 /* cSpell:disable */
-// #define DEBUG_02
 // #define DEBUG_RANDOM
 #ifndef ARDUINO_ARCH_RP2040
   #error works only on earlephilhower core
@@ -245,7 +244,6 @@ void loop()
       #endif
       steps = slowdown[0][0];
       scrollDelay = slowdown[0][1];
-      #ifndef DEBUG_02
       tft.fillCircle(150-ledSize/2, 0+ledSize/2, ledSize/2, TFT_GREEN);
       tft.drawCircle(150-ledSize/2, 0+ledSize/2, ledSize/2, TFT_WHITE);
       for (unsigned long i=loop_i; i<=top_pos; i+=gWidth*steps) {
@@ -287,8 +285,6 @@ void loop()
           scrollDelay += slowdown[SlowDownEl-1][1];
         }
       }
-      #endif
-
       if (sdCardOK) {
         sdCardOK = saveResult(SD, 0, rnd1, rnd2, duration1, duration2, seedL, seedR, millis());
       }
