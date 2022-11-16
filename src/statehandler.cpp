@@ -15,6 +15,7 @@ state_type key_logic(state_type old_state) {
 
     // Serial.print("Pin state     : "); Serial.println(e.pinState, BIN);
     // Serial.print("Pin number    : "); Serial.println(e.pinNum);
+    Serial.print("Direction    : "); Serial.println(e.direction);
     // Serial.print("Timestamp (ms): "); Serial.println(e.timestamp);
 
 
@@ -28,11 +29,27 @@ state_type key_logic(state_type old_state) {
       } 
     else if (old_state == random_display and e.direction == e_up)
       {
-        new_state = show_statistics;
+        new_state = before_waiting_for_press;
+      }
+    else if (old_state == random_display and e.direction == e_right)
+      {
+        new_state = show_statistics_Single;
+      }
+    else if (old_state == random_display and e.direction == e_left)
+      {
+        new_state = show_statistics_Sum;
       }
     else if (old_state == wait_in_statistics and e.direction == e_up)
       {
         new_state = before_waiting_for_press;
+      }
+    else if (old_state == wait_in_statistics and e.direction == e_right)
+      {
+        new_state = show_statistics_Single;
+      }
+    else if (old_state == wait_in_statistics and e.direction == e_left)
+      {
+        new_state = show_statistics_Sum;
       }
     else new_state = old_state;
   }

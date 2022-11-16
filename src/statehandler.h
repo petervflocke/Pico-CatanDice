@@ -8,7 +8,9 @@ typedef enum {
   random_waiting_for_release,   // 1
   random_slow_down,             // 2
   random_display,               // 3
-  show_statistics,              // 4
+  show_statistics,              // 4 not used now
+  show_statistics_Sum,          //
+  show_statistics_Single,       //
   wait_in_statistics,           // 5
   before_waiting_for_press,     // 6
   none                          // 7

@@ -25,7 +25,7 @@ const unsigned short *ptr_start = ptr + ((gHeight-1)*gWidth*  3); // 1
 const unsigned short *ptr_stop  = ptr + ((gHeight-1)*gWidth*  9); // 1
 const unsigned int top_pos = (gHeight-1)*gWidth*6;
 
-void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab) {
+void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab) {
   #define sRX   7 /* stat box upper x*/
   #define sRY  20 /* stat box uper y*/
   #define sWi 143 /* stat box width */
@@ -51,8 +51,8 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_i
   u_int32_t maxProb = 0;  
   if (statTab  == left_and_Right) {
     for (int i=0; i<6; i++) {
-      maxProb = (maxProb < statTabL[i]? statTabL[i] : maxProb);
-      maxProb = (maxProb < statTabR[i]? statTabR[i] : maxProb);
+      maxProb = (maxProb < TabL[i]? TabL[i] : maxProb);
+      maxProb = (maxProb < TabR[i]? TabR[i] : maxProb);
     }
   } else if (statTab == sum_of_both) {
     for (int i=0; i<11; i++) {
@@ -68,11 +68,11 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_i
   tft.drawFastHLine(sRX+sXY, sRY+sHi-2*sXY, sWi-2*sXY, TFT_BLACK);
   if (statTab  == left_and_Right) {
     for (int i=0; i<6; i++) {
-      int barHight=100*statTabL[i]/statCnt;
+      int barHight=100*TabL[i]/statCnt;
       barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY);
       tft.fillRect (sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr), sRY+sHi-2*sXY-barHight, sBwlr, barHight, TFT_GREEN);
       
-      barHight=100*statTabR[i]/statCnt;
+      barHight=100*TabR[i]/statCnt;
       barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY);
       tft.fillRect (sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr)+sBwlr+1, sRY+sHi-2*sXY-barHight, sBwlr, barHight, TFT_RED);
 

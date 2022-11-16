@@ -13,8 +13,6 @@
 #define pinBut 7
 #define pinA   8
 #define pinB   9
-#define analog0 26
-#define analog1 27
 
 typedef enum {
   e_none,

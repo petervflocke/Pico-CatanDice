@@ -12,89 +12,26 @@
 #include "Free_Fonts.h"
 #include <RingBufCPP.h>
 #include <ptScheduler.h>
-// #include <SPI.h>
 #include <SD.h>
-
 #include "settings.h"
 #include "songs.h"
-// #include "pitches.h"
 #include "logger.h"
-
-// #include "reelpic.h"
-// #include "counter.h"
-
 #include "graphics.h"
 #include "keyhandler.h"
 #include "statehandler.h"
+#include "randomgenerator.h"
 
-TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
+TFT_eSPI tft = TFT_eSPI();  
 TFT_eSprite scrollText1  = TFT_eSprite(&tft);
 
 ptScheduler  pt_random_waiting_for_press = ptScheduler(PT_TIME_2S);
 ptScheduler  pt_random_display = ptScheduler(PT_TIME_20MS);
 ptScheduler  pt_song = ptScheduler(1);
 
-// volatile byte xstate = LOW; // change build in led when a button is pressed
 // volatile long secuenceN = 0;
-
-
 
 // ring buffer
 RingBufCPP<struct Event, MAX_NUM_ELEMENTS> buf;
-
-u_int32_t statTabL[6];
-u_int32_t statTabR[6];
-u_int32_t statTabS[11];
-/*  statistics[ 0] =>  2
-    statistics[ 1] =>  3
-    statistics[ 2] =>  4
-    ...
-    statistics[10] => 12
-*/
-u_int32_t statCnt=0;
-
-
-void seedrnd(unsigned long t, uint32_t &randomVal){
-  
-#define RANDOM_01
-#ifdef RANDOM_01
-  uint32_t random_bit;
-  randomVal = 0;
-  volatile uint32_t *rnd_reg = (uint32_t *)(ROSC_BASE + ROSC_RANDOMBIT_OFFSET);
-
-  for (int k = 0; k < 32; k++) {
-    while (1) {
-      random_bit = (*rnd_reg) & 1;
-      if (random_bit != ((*rnd_reg) & 1)) break;
-    }
-    randomVal = (randomVal << 1) | random_bit;
-  }
-  // randomVal *= t*abs(analogRead(analog0)+analogRead(analog1));
-
-  // secuenceN += 1;
-  // Serial.print(secuenceN); 
-  // Serial.print(" : "); 
-  // Serial.print(randomVal); 
-  // Serial.print(" : "); 
-  // Serial.println((randomVal % 6)+1);
-
-#else
-uint32_t randomVal = 0x811c9dc5;
-  uint8_t next_byte = 0;
-  volatile uint32_t *rnd_reg = (uint32_t *)(ROSC_BASE + ROSC_RANDOMBIT_OFFSET);
-
-  for (int i = 0; i < 16; i++) {
-    for (int k = 0; k < 8; k++) {
-      next_byte = (next_byte << 1) | (*rnd_reg & 1);
-    }
-
-    randomVal ^= next_byte;
-    randomVal *= 0x01000193;
-  }
-#endif
-  randomVal += t+abs(analogRead(analog0)-analogRead(analog1));
-  randomSeed(randomVal);    
-}
 
 boolean sdCardOK;
 int noteIndex;
@@ -139,6 +76,19 @@ void setup()
 
 void loop()
 { 
+  
+  u_int32_t statCnt=0;
+
+  u_int32_t statTabL[6] = {0, 0, 0, 0, 0, 0};
+  u_int32_t statTabR[6] = {0, 0, 0, 0, 0, 0};
+  u_int32_t statTabS[11]= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};;
+  /*  statistics[ 0] =>  2
+      statistics[ 1] =>  3
+      statistics[ 2] =>  4
+      ...
+      statistics[10] => 12
+  */
+
   int scrollDelay;
   bool first_run = true;
   int steps;
@@ -162,6 +112,7 @@ void loop()
 
   unsigned long duration1;
   unsigned long duration2;
+
   duration1 = millis();
 
   state_type current_state = random_waiting_for_press;
@@ -309,6 +260,7 @@ void loop()
       statTabS[rndSum-2] += 1;
       statCnt += 1;
 
+      //#define DEBUG_RANDOM
       #ifdef DEBUG_RANDOM
       Serial.print("Count : "); Serial.println(statCnt);
       for (int i=0; i<6; i++) {
@@ -395,6 +347,7 @@ void loop()
 
       pt_song.disable();
 
+      #define KEEP_
       #ifndef KEEP_
 
       // scrollText1.deleteSprite();
@@ -434,7 +387,9 @@ void loop()
       // drawChart(statTabR, 6, 1);
       // drawBarChart(sum_of_both);
       // drawBarChart(left_and_Right);
+
       drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
+      // drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
       delay(200);
 
 /*
@@ -451,6 +406,22 @@ void loop()
       scrollText1.drawString(MessageStr, rBl, 2, 2);
       scrollText1.pushSprite(15, sRY+sHi+sXY, 0, 0, rBl, rBh);
 */      
+      current_state = wait_in_statistics;
+      key_clean();
+    }
+    else if (current_state == show_statistics_Single) {
+      pt_song.disable();
+      drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
+      // drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
+      delay(100);
+      current_state = wait_in_statistics;
+      key_clean();
+    }
+    else if (current_state == show_statistics_Sum) {
+      pt_song.disable();
+      // drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
+      drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
+      delay(100);
       current_state = wait_in_statistics;
       key_clean();
     }

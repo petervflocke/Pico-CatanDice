@@ -59,6 +59,4 @@ const char MessageText1[] PROGMEM = "Press START to continue. [%d] L: %d %.0f%% 
 void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab);
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, int maxIndex, int deltaIndex);
 
-
-
 #endif
