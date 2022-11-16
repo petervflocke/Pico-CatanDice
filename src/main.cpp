@@ -26,6 +26,7 @@
 
 #include "graphics.h"
 #include "keyhandler.h"
+#include "statehandler.h"
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 TFT_eSprite scrollText1  = TFT_eSprite(&tft);
@@ -37,57 +38,10 @@ ptScheduler  pt_song = ptScheduler(1);
 // volatile byte xstate = LOW; // change build in led when a button is pressed
 // volatile long secuenceN = 0;
 
-typedef enum {pin_fall, pin_reis} pinState_t;
 
-typedef enum {
-  random_waiting_for_press,     // 0
-  random_waiting_for_release,   // 1
-  random_slow_down,             // 2
-  random_display,               // 3
-  show_statistics,              // 4
-  wait_in_statistics,           // 5
-  before_waiting_for_press,     // 6
-  none                          // 7
-} state_type;
 
 // ring buffer
 RingBufCPP<struct Event, MAX_NUM_ELEMENTS> buf;
-
-state_type key_logic(state_type old_state) {
-  struct Event e;
-  state_type new_state=none;
-  
-  noInterrupts();
-  bool data=buf.pull(&e);
-  interrupts();
-  
-  if (data) { 
-
-    // Serial.print("Pin state     : "); Serial.println(e.pinState, BIN);
-    // Serial.print("Pin number    : "); Serial.println(e.pinNum);
-    // Serial.print("Timestamp (ms): "); Serial.println(e.timestamp);
-
-
-    if (old_state == random_waiting_for_press and e.direction == e_down)
-      {
-        new_state = random_waiting_for_release;
-      } 
-    else if (old_state == random_waiting_for_release and e.direction == e_up)
-      {
-        new_state = random_slow_down;
-      } 
-    else if (old_state == random_display and e.direction == e_up)
-      {
-        new_state = show_statistics;
-      }
-    else if (old_state == wait_in_statistics and e.direction == e_up)
-      {
-        new_state = before_waiting_for_press;
-      }
-    else new_state = old_state;
-  }
-  return new_state;
-}
 
 u_int32_t statTabL[6];
 u_int32_t statTabR[6];
@@ -162,8 +116,7 @@ void setup()
     tft.pushImage(rx, ry, gWidth, gHeight, space+i);
     delay(20);
   }
-  delay(2000);
-
+  
   // Prepare pins and buttons handling
   pinMode(LED_PIN, OUTPUT);
   pinMode(pinBut, INPUT_PULLUP);
@@ -180,6 +133,9 @@ void setup()
   if (sdCardOK) {
     sdCardOK = saveResult(SD, 1, 0, 0, 0, 0, 0, 0, millis());
   }
+
+  delay(1500);
+
 }
 
 void loop()
