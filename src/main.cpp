@@ -35,6 +35,7 @@ RingBufCPP<struct Event, MAX_NUM_ELEMENTS> buf;
 
 boolean sdCardOK;
 int noteIndex;
+state_type stateTable[stateNumber][eventNumber];
 
 void setup()
 {
@@ -70,6 +71,7 @@ void setup()
     sdCardOK = saveResult(SD, 1, 0, 0, 0, 0, 0, 0, millis());
   }
 
+  initState();
   delay(1500);
 
 }
@@ -117,6 +119,7 @@ void loop()
 
   state_type current_state = random_waiting_for_press;
   state_type former_state = current_state;
+
 
   while (true) {
     if (!buf.isEmpty())
@@ -304,8 +307,9 @@ void loop()
       pt_song.enable();
       noteIndex = 0;
 
-      current_state = random_display;      
-      key_clean();      
+      // current_state = random_display;      
+      key_clean();
+      key_none();
     }
     else if (current_state == random_display) {
       // display
@@ -406,37 +410,37 @@ void loop()
       scrollText1.drawString(MessageStr, rBl, 2, 2);
       scrollText1.pushSprite(15, sRY+sHi+sXY, 0, 0, rBl, rBh);
 */      
-      current_state = wait_in_statistics;
+      // current_state = wait_in_statistics;
       key_clean();
+      key_none();
     }
     else if (current_state == show_statistics_Single) {
       pt_song.disable();
       drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
-      // drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
       delay(100);
-      current_state = wait_in_statistics;
+      // current_state = wait_in_statistics;
       key_clean();
+      key_none();
     }
     else if (current_state == show_statistics_Sum) {
       pt_song.disable();
-      // drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
       drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
       delay(100);
-      current_state = wait_in_statistics;
+      // current_state = wait_in_statistics;
       key_clean();
+      key_none();
     }
     else if (current_state == wait_in_statistics) {
-        delay(50);
-        // scrollText1.scroll(-1);
-        // scrollText1.pushSprite(15, sRY+sHi+sXY, 0, 0, rBl, rBh);
+        delay(20);
     }
     else if (current_state == before_waiting_for_press) {
       scrollText1.deleteSprite();
       tft.pushImage(0, 0, counterWidth, counterHeight, counter);
-      current_state = random_waiting_for_press;
       delay(100);
       duration1 = millis()+analogRead(analog1);
+      // current_state = random_waiting_for_press;
       key_clean();
+      key_none();
     }
   }
 }

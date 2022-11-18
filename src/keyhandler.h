@@ -15,12 +15,13 @@
 #define pinB   9
 
 typedef enum {
-  e_none,
+  e_none=0,
   e_right,
   e_left,
   e_down,
   e_up
 } coder_type;
+#define eventNumber (e_up-e_none+1) /* simplify counting coder_type elements */
 
 struct Event
 {
@@ -36,5 +37,6 @@ extern RingBufCPP<struct Event, MAX_NUM_ELEMENTS> buf;
 
 void gpio_callback(uint gpio, uint32_t events);
 void key_clean();
+void key_none();
 
 #endif

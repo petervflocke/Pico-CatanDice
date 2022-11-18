@@ -69,11 +69,21 @@ static volatile byte xstate = LOW;
   }
 }
 
+// cleanup all key(board) presses
 void key_clean() {
   struct Event e;
   noInterrupts();
   while (!buf.isEmpty()) {
     buf.pull(&e);
   }
+  interrupts();
+}
+
+// add a dummy key press to enable none-key actions (logical state change)
+void key_none() {
+  struct Event e;
+  e.direction = e_none;
+  noInterrupts();
+  buf.add(e);
   interrupts();
 }
