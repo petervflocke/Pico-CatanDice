@@ -14,9 +14,11 @@ typedef enum {
   show_statistics,              // 5 not used now
   show_statistics_Sum,          // 6
   show_statistics_Single,       // 7
-  wait_in_statistics,           // 8
-  before_waiting_for_press,     // 9
-  thened                        // 10
+  show_statistics_SumAll,       // 8
+  show_statistics_SingleAll,    // 9
+  wait_in_statistics,           // 10 not used now
+  before_waiting_for_press,     // 11
+  thened                        // 12
 } state_type;
 #define stateNumber (thened-none+1)
 

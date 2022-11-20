@@ -17,4 +17,7 @@ unsigned int slowdown[SlowDownEl][2]={  // lines to move in one stepo, delay in 
 { 5,  1}  // 9 SlowDownEl-1
 };
 
+
+
+
 #endif

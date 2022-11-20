@@ -40,7 +40,7 @@ state_type stateTable[stateNumber][eventNumber];
 void setup()
 {
   Serial.begin(115200);
-  // while (!Serial);
+  while (!Serial);
 
   tft.init();   // old tft.begin();
   tft.setRotation(3);  // landscape upside down
@@ -63,33 +63,57 @@ void setup()
   gpio_set_irq_enabled(pinA, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
   gpio_set_irq_enabled(pinB, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
 
+  myStat.currentDur = millis();
   sdCardOK = SD.begin(PIN_SD_CS, SPI);
   if (sdCardOK) {
     sdCardOK = myLogger(SD);
   }
   if (sdCardOK) {
-    sdCardOK = saveResult(SD, 1, 0, 0, 0, 0, 0, 0, millis());
+    sdCardOK = saveResult(SD, 1, 0, 0, 0, 0, 0, 0, myStat.currentDur);
   }
 
   initState();
-  delay(1500);
+  unsigned long tt = millis();
+  Serial.println("Start reading");
+  
+  if (readResult(SD)) {
+    Serial.println("Reading ok");  
+  };
+  Serial.print("Stop reading after: ");
+  Serial.println(millis()-tt);
+  // delay(1500-tt);
+
+  Serial.print("allDur     : "); Serial.println(myStat.allDur);
+  Serial.print("currentDur : "); Serial.println(myStat.currentDur);
+  Serial.print("numberGames: "); Serial.println(myStat.numberGames);
+  Serial.print("numberDraws: "); Serial.println(myStat.numberDraws);
+  Serial.print("inputError : "); Serial.println(myStat.inputError);
+  Serial.print("lineNumberError : "); Serial.println(myStat.lineNumberError);
+
+  for (int i=0; i<6; i++) {
+    Serial.print(" L "); Serial.print(i+1); Serial.print(" : "); Serial.print(statTabLg[i]); Serial.print(" - "); Serial.println( double(statTabLg[i])/float(myStat.numberDraws)*100.0, 2 );
+  }
+  for (int i=0; i<6; i++) {
+    Serial.print(" R "); Serial.print(i+1); Serial.print(" : "); Serial.print(statTabRg[i]); Serial.print(" - "); Serial.println( double(statTabRg[i])/float(myStat.numberDraws)*100.0, 2 );
+  }
+  Serial.print("i : "); Serial.println(myStat.numberDraws);
+  for (int i=0; i<11; i++) {
+    Serial.print(" S "); Serial.print(i+2); Serial.print(" : "); Serial.print(statTabSg[i]); Serial.print(" - "); Serial.println( double(statTabSg[i])/float(myStat.numberDraws)*100.0, 2 );
+  }
+
 
 }
 
+
 void loop()
 { 
-  
   u_int32_t statCnt=0;
 
-  u_int32_t statTabL[6] = {0, 0, 0, 0, 0, 0};
-  u_int32_t statTabR[6] = {0, 0, 0, 0, 0, 0};
-  u_int32_t statTabS[11]= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};;
-  /*  statistics[ 0] =>  2
-      statistics[ 1] =>  3
-      statistics[ 2] =>  4
-      ...
-      statistics[10] => 12
-  */
+  statTab_t  statTabL = {0, 0, 0, 0, 0, 0};
+  statTab_t  statTabR = {0, 0, 0, 0, 0, 0};
+  statTabS_t statTabS = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  statTabSg[0] = 0;
 
   int scrollDelay;
   bool first_run = true;
@@ -124,15 +148,16 @@ void loop()
   while (true) {
     if (!buf.isEmpty())
       {
-        current_state = key_logic(former_state);
+        // current_state = key_logic(former_state);
+        current_state = key_logic(current_state);
       }  
-    if (current_state != former_state) {
+/*     if (current_state != former_state) {
       // Serial.print("Old / New State: "); 
       // Serial.print(former_state);
       // Serial.print("->");
       // Serial.println(current_state);
       former_state = current_state;
-    }
+    } */
 
     if (current_state == random_waiting_for_press) {
       if (pt_random_waiting_for_press.call()) {
@@ -415,23 +440,52 @@ void loop()
       key_none();
     }
     else if (current_state == show_statistics_Single) {
-      pt_song.disable();
-      drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
+      if (current_state != former_state) {
+        pt_song.disable();
+        drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
+        former_state = current_state;
+      } 
       delay(100);
       // current_state = wait_in_statistics;
-      key_clean();
-      key_none();
+      // key_clean();
+      // key_none();
     }
     else if (current_state == show_statistics_Sum) {
-      pt_song.disable();
-      drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
+      if (current_state != former_state) {
+        pt_song.disable();
+        drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
+        former_state = current_state;
+      } 
       delay(100);
       // current_state = wait_in_statistics;
-      key_clean();
-      key_none();
+      // key_clean();
+      // key_none();
     }
+    else if (current_state == show_statistics_SingleAll) {
+      if (current_state != former_state) {
+      pt_song.disable();
+      drawBarChart(tft, statTabLg, statTabRg, statTabSg, statCnt, left_and_Right);
+        former_state = current_state;
+      } 
+      delay(100);
+      // current_state = wait_in_statistics;
+      // key_clean();
+      // key_none();
+    }
+    else if (current_state == show_statistics_SumAll) {
+      if (current_state != former_state) {
+        pt_song.disable();
+        drawBarChart(tft, statTabLg, statTabRg, statTabSg, statCnt, sum_of_both);
+        former_state = current_state;
+      } 
+      delay(100);
+      // current_state = wait_in_statistics;
+      // key_clean();
+      // key_none();
+    }    
     else if (current_state == wait_in_statistics) {
-        delay(20);
+      pt_song.disable();
+      delay(20);
     }
     else if (current_state == before_waiting_for_press) {
       scrollText1.deleteSprite();

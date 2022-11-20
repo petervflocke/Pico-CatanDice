@@ -28,11 +28,27 @@ void initState () {
   stateTable[random_display]            [e_right] =  show_statistics_Single;
   stateTable[random_display]            [e_left]  =  show_statistics_Sum;
   stateTable[show_statistics]           [none]    =  wait_in_statistics;
-  stateTable[show_statistics_Single]    [none]    =  wait_in_statistics;
-  stateTable[show_statistics_Sum]       [none]    =  wait_in_statistics;
-  stateTable[wait_in_statistics]        [e_up]    =  before_waiting_for_press;
+  stateTable[show_statistics_Single]    [e_up]    =  before_waiting_for_press;
+  stateTable[show_statistics_Sum]       [e_up]    =  before_waiting_for_press;
+  stateTable[show_statistics_Single]    [e_right] =  show_statistics_SingleAll;
+  stateTable[show_statistics_Single]    [e_left]  =  show_statistics_Sum;
+  stateTable[show_statistics_Sum]       [e_left]  =  show_statistics_SumAll;
+  stateTable[show_statistics_Sum]       [e_right] =  show_statistics_Single;
+  
+  stateTable[show_statistics_SingleAll] [e_up]    =  before_waiting_for_press;
+  stateTable[show_statistics_SingleAll] [e_right] =  show_statistics_SumAll;
+  stateTable[show_statistics_SingleAll] [e_left]  =  show_statistics_Single;
+
+  stateTable[show_statistics_SumAll]    [e_up]    =  before_waiting_for_press;
+  stateTable[show_statistics_SumAll]    [e_right] =  show_statistics_Sum;
+  stateTable[show_statistics_SumAll]    [e_left]  =  show_statistics_SingleAll;
+
+
+
+/*   stateTable[wait_in_statistics]        [e_up]    =  before_waiting_for_press;
   stateTable[wait_in_statistics]        [e_right] =  show_statistics_Single;
-  stateTable[wait_in_statistics]        [e_left]  =  show_statistics_Sum;
+  stateTable[wait_in_statistics]        [e_left]  =  show_statistics_Sum; */
+
   stateTable[before_waiting_for_press]  [none]    =  random_waiting_for_press;
 }
   

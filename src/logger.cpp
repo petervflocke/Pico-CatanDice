@@ -2,6 +2,21 @@
 #include "Arduino.h"
 #include <SD.h>
 #include "logger.h"
+#include <string.h>
+
+
+statTabS_t statTabSg = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+statTab_t  statTabLg = {0, 0, 0, 0, 0, 0};
+statTab_t  statTabRg = {0, 0, 0, 0, 0, 0};
+  
+stat_t myStat = {
+  .allDur=0,
+  .currentDur=0,
+  .numberGames=0,
+  .numberDraws=0,
+  .inputError=false,
+  .lineNumberError=0
+};
 
 void stringdump(char* str) {
   Serial.print("=>");
@@ -25,15 +40,20 @@ bool readLine(File &f, char* line, size_t maxLen) {
   return false; // line too long
 }
 
-bool readVals(char* line, long &v1, long &v2) {
-  char *ptr, *str;
-  v1 = strtol(line, &ptr, 10);
-  if (ptr == line) return false;  // bad number if equal
-  while (*ptr) {
-    if (*ptr++ == ',') break;
+bool readVals(char* line, variableTab_t variableTab) {
+  char *ptr;
+  int i;
+  ptr = line;
+  i = 0;
+  while (*ptr && i < numberVariables) {
+    variableTab[i] = strtoul(ptr, &ptr, 10);
+// Serial.print(variableTab[i]);Serial.print(",");
+    i ++;
+    while (*ptr) {
+      if (*ptr++ == ',') break;
+    }
   }
-  v2 = strtol(ptr, &str, 10);
-  return str != ptr;  // true if number found
+  return (!(*ptr || i != 8));
 }
 
 bool myLogger(SDClass &myCard) {
@@ -102,4 +122,55 @@ bool saveResult(SDClass &myCard, uint32_t var1, uint32_t var2, uint32_t var3, ui
     myFile.close();
     return true;
   } else return false;
+}
+
+bool readResult(SDClass &myCard) {
+  File myFile;
+  char lineBuf[CSVMessageLen];
+  variableTab_t variableTab;
+  
+  long ln=1;
+  unsigned long firstDur = 0;
+  unsigned long lastDur = 0;
+  myStat.inputError = false;
+
+  myFile = myCard.open(fileName, FILE_READ);
+  if (myFile) {
+    readLine(myFile, lineBuf, CSVMessageLen);
+    Serial.print(ln); Serial.print(": "); Serial.println(lineBuf);
+    while (myFile.available() && !myStat.inputError) {
+      ln += 1;
+      Serial.print(ln); Serial.print(": ");
+      readLine(myFile, lineBuf, CSVMessageLen);
+      if (readVals(lineBuf, variableTab)) {
+        for (int j=0; j < numberVariables; j++) {
+          Serial.print(variableTab[j]); Serial.print(", ");
+        }
+        if (variableTab[0] == 1) {
+          myStat.allDur += lastDur - firstDur;
+          myStat.numberGames += 1;
+          firstDur = variableTab[7];
+        } else {
+          if (variableTab[1] <= 6 && variableTab[2] <= 6) {
+            statTabLg[variableTab[1]-1]++;
+            statTabRg[variableTab[2]-1]++;
+            statTabSg[variableTab[1]+variableTab[2]-2]++;
+            myStat.numberDraws++;
+            lastDur = variableTab[7];
+          } else {
+            myStat.inputError = true;
+            myStat.lineNumberError = ln;
+            Serial.println(": Data Error");
+          }
+        }
+        Serial.println();
+      } else {
+        Serial.println(": Data Error");
+        myStat.inputError = true;
+        myStat.lineNumberError = ln;        
+      }
+    }
+    myFile.close();
+  }
+  return !myStat.inputError;
 }
