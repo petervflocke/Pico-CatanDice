@@ -266,73 +266,6 @@ void loop()
           scrollDelay += slowdown[SlowDownEl-1][1];
         }
       }
-      if (sdCardOK) {
-        sdCardOK = saveResult(SD, 0, rnd1, rnd2, duration1, duration2, seedL, seedR, millis());
-      }
-
-      delay(1000);
-      tft.pushImage(lx, ly, gWidth, gHeight, space);
-      tft.pushImage(rx, ry, gWidth, gHeight, space);
-      tft.fillRoundRect(rRX+4, rRY+4, rWi, rHi, 5, TFT_BLACK);
-      tft.fillRoundRect(rRX  , rRY  , rWi, rHi, 5, TFT_WHITE);
-
-      rndSum = rnd1+rnd2;
-      if (rndSum < 10) {
-        tft.pushImage(rRX+rWi/2-gWidth/2, rRY+(rHi)/2-mHi/2, gWidth, mHi, digits[rndSum]   +gWidth*dSt);
-      } else {
-        tft.pushImage(rRX+4,              rRY+(rHi)/2-mHi/2, gWidth, mHi, digits[rndSum/10]+gWidth*dSt);
-        tft.pushImage(rRX+4+42+4,         rRY+(rHi)/2-mHi/2, gWidth, mHi, digits[rndSum%10]+gWidth*dSt);
-      }
-      resultFrameColor = 0;
-
-      statTabL[rnd1-1] += 1;
-      statTabR[rnd2-1] += 1;
-      statTabS[rndSum-2] += 1;
-      statCnt += 1;
-
-      //#define DEBUG_RANDOM
-      #ifdef DEBUG_RANDOM
-      Serial.print("Count : "); Serial.println(statCnt);
-      for (int i=0; i<6; i++) {
-        Serial.print(" L "); Serial.print(i+1); Serial.print(" : "); Serial.print(statTabL[i]); Serial.print(" - "); Serial.println( double(statTabL[i])/float(statCnt)*100.0, 2 );
-      }
-      for (int i=0; i<6; i++) {
-        Serial.print(" R "); Serial.print(i+1); Serial.print(" : "); Serial.print(statTabR[i]); Serial.print(" - "); Serial.println( double(statTabR[i])/float(statCnt)*100.0, 2 );
-      }
-      Serial.print("i : "); Serial.println(statCnt);
-      for (int i=0; i<11; i++) {
-        Serial.print(" S "); Serial.print(i+2); Serial.print(" : "); Serial.print(statTabS[i]); Serial.print(" - "); Serial.println( double(statTabS[i])/float(statCnt)*100.0, 2 );
-      }
-      #endif
-
-      snprintf_P(MessageStr, sizeof(MessageStr), 
-          /* PSTR("Press START to continue. [%d] L:%d %.0f%% | R:%d %.0f%% | S:%d %.0f%%"), */
-          MessageText1,
-          statCnt,
-          rnd1,   float(statTabL[rnd1-1])/statCnt*100.0,
-          rnd2,   float(statTabR[rnd2-1])/statCnt*100.0,
-          rndSum, float(statTabS[rndSum-2])/statCnt*100.0
-      );
-      messageGLen = tft.textWidth(MessageStr, 2)+10;
-      scrollText1.setColorDepth(8);
-      scrollText1.createSprite(rBl+messageGLen, rBh);
-      scrollText1.fillSprite(TFT_BLUE);
-      scrollText1.setScrollRect(0, 0, rBl+messageGLen, rBh, TFT_BLUE); 
-      scrollText1.setTextColor(TFT_WHITE);
-
-
-      scrollText1.drawString(MessageStr, rBl, 2, 2);
-      scrollText1.pushSprite(15, rRY+rHi+9, 0, 0, rBl, rBh);
-      messageIndex = messageGLen;
-
-      // Prepare songs
-      if ( rndSum != 7) {
-        pt_song.setSequenceRepetition(Song2Len * 1); // repeat song 1 time
-      } else {
-        pt_song.setSequenceRepetition(0); // repeat 4ever
-      }
-      pt_song.enable();
-      noteIndex = 0;
 
       // current_state = random_display;      
       key_clean();
@@ -340,6 +273,75 @@ void loop()
     }
     else if (current_state == random_display) {
       if (current_state != former_state) {
+
+        if (sdCardOK) {
+          sdCardOK = saveResult(SD, 0, rnd1, rnd2, duration1, duration2, seedL, seedR, millis());
+        }
+
+        delay(1000);
+        tft.pushImage(lx, ly, gWidth, gHeight, space);
+        tft.pushImage(rx, ry, gWidth, gHeight, space);
+        tft.fillRoundRect(rRX+4, rRY+4, rWi, rHi, 5, TFT_BLACK);
+        tft.fillRoundRect(rRX  , rRY  , rWi, rHi, 5, TFT_WHITE);
+
+        rndSum = rnd1+rnd2;
+        if (rndSum < 10) {
+          tft.pushImage(rRX+rWi/2-gWidth/2, rRY+(rHi)/2-mHi/2, gWidth, mHi, digits[rndSum]   +gWidth*dSt);
+        } else {
+          tft.pushImage(rRX+4,              rRY+(rHi)/2-mHi/2, gWidth, mHi, digits[rndSum/10]+gWidth*dSt);
+          tft.pushImage(rRX+4+42+4,         rRY+(rHi)/2-mHi/2, gWidth, mHi, digits[rndSum%10]+gWidth*dSt);
+        }
+        resultFrameColor = 0;
+
+        statTabL[rnd1-1] += 1;
+        statTabR[rnd2-1] += 1;
+        statTabS[rndSum-2] += 1;
+        statCnt += 1;
+
+        //#define DEBUG_RANDOM
+        #ifdef DEBUG_RANDOM
+        Serial.print("Count : "); Serial.println(statCnt);
+        for (int i=0; i<6; i++) {
+          Serial.print(" L "); Serial.print(i+1); Serial.print(" : "); Serial.print(statTabL[i]); Serial.print(" - "); Serial.println( double(statTabL[i])/float(statCnt)*100.0, 2 );
+        }
+        for (int i=0; i<6; i++) {
+          Serial.print(" R "); Serial.print(i+1); Serial.print(" : "); Serial.print(statTabR[i]); Serial.print(" - "); Serial.println( double(statTabR[i])/float(statCnt)*100.0, 2 );
+        }
+        Serial.print("i : "); Serial.println(statCnt);
+        for (int i=0; i<11; i++) {
+          Serial.print(" S "); Serial.print(i+2); Serial.print(" : "); Serial.print(statTabS[i]); Serial.print(" - "); Serial.println( double(statTabS[i])/float(statCnt)*100.0, 2 );
+        }
+        #endif
+
+        snprintf_P(MessageStr, sizeof(MessageStr), 
+            /* PSTR("Press START to continue. [%d] L:%d %.0f%% | R:%d %.0f%% | S:%d %.0f%%"), */
+            MessageText1,
+            statCnt,
+            rnd1,   float(statTabL[rnd1-1])/statCnt*100.0,
+            rnd2,   float(statTabR[rnd2-1])/statCnt*100.0,
+            rndSum, float(statTabS[rndSum-2])/statCnt*100.0
+        );
+        messageGLen = tft.textWidth(MessageStr, 2)+10;
+        scrollText1.setColorDepth(8);
+        scrollText1.createSprite(rBl+messageGLen, rBh);
+        scrollText1.fillSprite(TFT_BLUE);
+        scrollText1.setScrollRect(0, 0, rBl+messageGLen, rBh, TFT_BLUE); 
+        scrollText1.setTextColor(TFT_WHITE);
+
+
+        scrollText1.drawString(MessageStr, rBl, 2, 2);
+        scrollText1.pushSprite(15, rRY+rHi+9, 0, 0, rBl, rBh);
+        messageIndex = messageGLen;
+
+        // Prepare songs
+        if ( rndSum != 7) {
+          pt_song.setSequenceRepetition(Song2Len * 1); // repeat song 1 time
+        } else {
+          pt_song.setSequenceRepetition(0); // repeat 4ever
+        }
+        pt_song.reset();
+        pt_song.enable();
+        noteIndex = 0;
 
         former_state = current_state;
       }       
