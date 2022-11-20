@@ -116,7 +116,6 @@ void loop()
   statTabSg[0] = 0;
 
   int scrollDelay;
-  bool first_run = true;
   int steps;
 
   int rnd1; 
@@ -142,7 +141,7 @@ void loop()
   duration1 = millis();
 
   state_type current_state = random_waiting_for_press;
-  state_type former_state = current_state;
+  state_type former_state = none;
 
 
   while (true) {
@@ -172,10 +171,12 @@ void loop()
       tft.pushImage(rx, ry, gWidth, gHeight, qq+(random(100)%2?1:-1)*random(4)*gWidth);
       delay(25);
 
-      first_run = true;
+      // first_run = true;
+      former_state = current_state;
     } 
     else if ( (current_state == random_waiting_for_release) ) {
-      if (first_run) {
+      // if (first_run) {
+      if (current_state != former_state) {
         duration1 = (millis()-duration1);
         seedrnd(duration1, seedL);
         rnd1 = random(1, 7);
@@ -199,7 +200,8 @@ void loop()
           tft.pushImage(rx, ry, gWidth, gHeight, ptr_stop -i);
           delay(scrollDelay);
         }
-        first_run = false;
+        // first_run = false;
+        former_state = current_state;
       }
       if (loop_i <= top_pos) {
         genTone();
@@ -337,6 +339,10 @@ void loop()
       key_none();
     }
     else if (current_state == random_display) {
+      if (current_state != former_state) {
+
+        former_state = current_state;
+      }       
       // display
       // rndSum = 7;
       u_int32_t framecolor;
