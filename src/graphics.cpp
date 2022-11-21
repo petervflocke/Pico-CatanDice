@@ -25,9 +25,9 @@ const unsigned short *ptr_start = ptr + ((gHeight-1)*gWidth*  3); // 1
 const unsigned short *ptr_stop  = ptr + ((gHeight-1)*gWidth*  9); // 1
 const unsigned int top_pos = (gHeight-1)*gWidth*6;
 
-void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab) {
+void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t TabS[], u_int32_t drawCnt, BarChartType statTab) {
   #define sRX   7 /* stat box upper x*/
-  #define sRY  20 /* stat box uper y*/
+  #define sRY  10 /* stat box uper y*/
   #define sWi 143 /* stat box width */
   #define sHi  80 /* stat box high */
   #define sXY  10 /* margin of 0,0 from boarders*/
@@ -56,10 +56,10 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t s
     }
   } else if (statTab == sum_of_both) {
     for (int i=0; i<11; i++) {
-      maxProb = (maxProb < statTabS[i]? statTabS[i] : maxProb);
+      maxProb = (maxProb < TabS[i]? TabS[i] : maxProb);
     }
   }
-  maxProb = 100*maxProb/statCnt;
+  maxProb = 100*maxProb/drawCnt;
   // Serial.print("maxProb :"); Serial.println(maxProb);
   for (int i=maxProb; i > 0; i-=maxProb/5) {
     tft.drawNumber(i, sRX+sXY-(i==100?2:0), sRY+sXY+(((maxProb-i)*(sHi-3*sXY)/maxProb))-2);
@@ -68,11 +68,11 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t s
   tft.drawFastHLine(sRX+sXY, sRY+sHi-2*sXY, sWi-2*sXY, TFT_BLACK);
   if (statTab  == left_and_Right) {
     for (int i=0; i<6; i++) {
-      int barHight=100*TabL[i]/statCnt;
+      int barHight=100*TabL[i]/drawCnt;
       barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY);
       tft.fillRect (sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr), sRY+sHi-2*sXY-barHight, sBwlr, barHight, TFT_GREEN);
       
-      barHight=100*TabR[i]/statCnt;
+      barHight=100*TabR[i]/drawCnt;
       barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY);
       tft.fillRect (sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr)+sBwlr+1, sRY+sHi-2*sXY-barHight, sBwlr, barHight, TFT_RED);
 
@@ -81,7 +81,7 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t s
     }    
   } else if (statTab == sum_of_both) {
     for (int i=0; i<11; i++) {
-      int barHight=100*statTabS[i]/statCnt;
+      int barHight=100*TabS[i]/drawCnt;
       // Serial.print(i+2); Serial.print(" : "); Serial.print(barHight);
       barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY);
       // Serial.print(" : "); Serial.println(barHight);

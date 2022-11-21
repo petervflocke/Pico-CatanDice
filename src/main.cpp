@@ -40,7 +40,7 @@ state_type stateTable[stateNumber][eventNumber];
 void setup()
 {
   Serial.begin(115200);
-  while (!Serial);
+  // while (!Serial);
 
   tft.init();   // old tft.begin();
   tft.setRotation(3);  // landscape upside down
@@ -112,8 +112,6 @@ void loop()
   statTab_t  statTabL = {0, 0, 0, 0, 0, 0};
   statTab_t  statTabR = {0, 0, 0, 0, 0, 0};
   statTabS_t statTabS = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-  statTabSg[0] = 0;
 
   int scrollDelay;
   int steps;
@@ -472,7 +470,7 @@ void loop()
     else if (current_state == show_statistics_SingleAll) {
       if (current_state != former_state) {
       pt_song.disable();
-      drawBarChart(tft, statTabLg, statTabRg, statTabSg, statCnt, left_and_Right);
+      drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, left_and_Right);
         former_state = current_state;
       } 
       delay(100);
@@ -483,7 +481,7 @@ void loop()
     else if (current_state == show_statistics_SumAll) {
       if (current_state != former_state) {
         pt_song.disable();
-        drawBarChart(tft, statTabLg, statTabRg, statTabSg, statCnt, sum_of_both);
+        drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, sum_of_both);
         former_state = current_state;
       } 
       delay(100);
