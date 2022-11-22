@@ -37,15 +37,57 @@ boolean sdCardOK;
 int noteIndex;
 state_type stateTable[stateNumber][eventNumber];
 
+
+
 void setup()
 {
   Serial.begin(115200);
   // while (!Serial);
+  
+  // Prepare pins and buttons handling
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(pinBut, INPUT_PULLUP);
+  pinMode(pinA, INPUT_PULLUP);
+  pinMode(pinB, INPUT_PULLUP);
+
 
   tft.init();   // old tft.begin();
   tft.setRotation(3);  // landscape upside down
   tft.fillScreen(TFT_BLACK);
   tft.setSwapBytes(true);
+
+  tft.fillScreen(TFT_WHITE);
+  tft.pushImage(SDX, SDY, sdcardiconWidth, sdcardiconHeight, sdcardicon);
+  tft.setTextColor(TFT_WHITE);
+  tft.drawString("SD Card", SDXt, SDYt, 2);
+  tft.setTextColor(TFT_BLUE);
+  tft.drawString("   ?", SDX1e, SDYe, 2);
+  sdCardOK = SD.begin(PIN_SD_CS, SPI);
+  if (sdCardOK) {
+    sdCardOK = myLogger(SD);
+  }
+  
+  myStat.currentDur = millis();
+  if (sdCardOK) {
+    sdCardOK = saveResult(SD, 1, 0, 0, 0, 0, 0, 0, myStat.currentDur);
+  }
+
+  if (sdCardOK) {
+    tft.setTextColor(TFT_BLUE);
+    tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
+    tft.drawString("CARD OK", SDX2e, SDYe, 2);
+    delay(1000);
+  } else {
+    tft.setTextColor(TFT_RED);
+    while (gpio_get(pinBut)) {
+      tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
+      delay(100);
+      tft.drawString("ERROR", SDX1e, SDYe, 2);
+      delay(100);
+    }    
+  }
+
+  tft.fillScreen(TFT_BLACK);
   tft.pushImage(0, 0, counterWidth, counterHeight, counter);
   for (unsigned long i=0; i<=(gHeight-1)*gWidth*1; i+=gWidth*4) {
     genTone();
@@ -55,22 +97,9 @@ void setup()
   }
   
   // Prepare pins and buttons handling
-  pinMode(LED_PIN, OUTPUT);
-  pinMode(pinBut, INPUT_PULLUP);
-  pinMode(pinA, INPUT_PULLUP);
-  pinMode(pinB, INPUT_PULLUP);
   gpio_set_irq_enabled_with_callback(pinBut, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true, &gpio_callback);
   gpio_set_irq_enabled(pinA, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
   gpio_set_irq_enabled(pinB, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
-
-  myStat.currentDur = millis();
-  sdCardOK = SD.begin(PIN_SD_CS, SPI);
-  if (sdCardOK) {
-    sdCardOK = myLogger(SD);
-  }
-  if (sdCardOK) {
-    sdCardOK = saveResult(SD, 1, 0, 0, 0, 0, 0, 0, myStat.currentDur);
-  }
 
   initState();
   unsigned long tt = millis();
@@ -469,8 +498,19 @@ void loop()
     }
     else if (current_state == show_statistics_SingleAll) {
       if (current_state != former_state) {
-      pt_song.disable();
-      drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, left_and_Right);
+        pt_song.disable();
+        if (sdCardOK) {
+          drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, left_and_Right);
+      } else {
+        tft.pushImage(SDX, SDY, sdcardiconWidth, sdcardiconHeight, sdcardicon, TFT_WHITE);
+        tft.setTextColor(TFT_WHITE);
+        tft.drawString("SD Card", SDXt, SDYt, 2);
+        tft.setTextColor(TFT_BLUE);
+        tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
+        tft.setTextColor(TFT_RED);
+        tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
+        tft.drawString("ERROR", SDX1e, SDYe, 2);
+      }
         former_state = current_state;
       } 
       delay(100);
