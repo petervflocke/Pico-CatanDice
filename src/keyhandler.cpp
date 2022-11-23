@@ -87,3 +87,12 @@ void key_none() {
   buf.add(e);
   interrupts();
 }
+bool checkBreak() {
+  struct Event e;
+  if (!buf.isEmpty()) {
+    noInterrupts();
+    bool data=buf.pull(&e);
+    interrupts();
+    return e.direction == e_up;
+  } else return false;
+}

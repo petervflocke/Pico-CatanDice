@@ -3,6 +3,7 @@
 #include <TFT_eSPI.h>
 #include "Free_Fonts.h"
 #include "graphics.h"
+#include "statehandler.h"
 
 // table with pointers of digits from reel data
 // const unsigned short *space = (unsigned short *)reel;
@@ -25,11 +26,12 @@ const unsigned short *ptr_start = ptr + ((gHeight-1)*gWidth*  3); // 1
 const unsigned short *ptr_stop  = ptr + ((gHeight-1)*gWidth*  9); // 1
 const unsigned int top_pos = (gHeight-1)*gWidth*6;
 
-void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t TabS[], u_int32_t drawCnt, BarChartType statTab) {
+void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t TabS[], u_int32_t drawCnt, BarChartType statTab, char *titel) {
   #define sRX   7 /* stat box upper x*/
   #define sRY  10 /* stat box uper y*/
   #define sWi 143 /* stat box width */
-  #define sHi  80 /* stat box high */
+  #define sHi  90 /* stat box high */
+  #define sXi  10 /* place for bottom margin */
   #define sXY  10 /* margin of 0,0 from boarders*/
   #define sBw   5 /* bar width */
   #define sBm   5 /* gap between bars */
@@ -43,10 +45,14 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t T
   tft.drawRoundRect(sRX-1, sRY-1, sWi, sHi, 5, TFT_GOLD);
   tft.drawRoundRect(sRX  , sRY  , sWi, sHi, 5, TFT_GOLD);
   tft.drawRoundRect(sRX+1, sRY+1, sWi, sHi, 5, TFT_GOLD);
-  tft.drawFastVLine(sRX+2*sXY, sRY+sXY, sHi-2*sXY, TFT_BLACK);
+  tft.drawFastVLine(sRX+2*sXY, sRY+sXY, sHi-2*sXY-sXi, TFT_BLACK);
 
+  
+  tft.setTextColor(TFT_BLUE,TFT_WHITE);
+  tft.setTextFont(2);
+  tft.drawCentreString(titel, 80, sRY+sHi-2*sXY+sBm, 1);
   tft.setFreeFont(TT1);
-  tft.setTextColor(TFT_BLUE,TFT_WHITE);  tft.setTextSize(1);
+  tft.setTextSize(1);
 
   u_int32_t maxProb = 0;  
   if (statTab  == left_and_Right) {
@@ -62,31 +68,31 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t T
   maxProb = 100*maxProb/drawCnt;
   // Serial.print("maxProb :"); Serial.println(maxProb);
   for (int i=maxProb; i > 0; i-=maxProb/5) {
-    tft.drawNumber(i, sRX+sXY-(i==100?2:0), sRY+sXY+(((maxProb-i)*(sHi-3*sXY)/maxProb))-2);
-    tft.drawFastHLine(sRX+2*sXY+1, sRY+sXY+((maxProb-i)*(sHi-3*sXY)/maxProb), sWi-3*sXY-1, TFT_LIGHTGREY);
+    tft.drawNumber(i, sRX+sXY-(i==100?2:0), sRY+sXY+(((maxProb-i)*(sHi-3*sXY-sXi)/maxProb))-2);
+    tft.drawFastHLine(sRX+2*sXY+1, sRY+sXY+((maxProb-i)*(sHi-3*sXY-sXi)/maxProb), sWi-3*sXY-1, TFT_LIGHTGREY);
   }
-  tft.drawFastHLine(sRX+sXY, sRY+sHi-2*sXY, sWi-2*sXY, TFT_BLACK);
+  tft.drawFastHLine(sRX+sXY, sRY+sHi-2*sXY-sXi, sWi-2*sXY, TFT_BLACK);
   if (statTab  == left_and_Right) {
     for (int i=0; i<6; i++) {
       int barHight=100*TabL[i]/drawCnt;
-      barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY);
-      tft.fillRect (sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr), sRY+sHi-2*sXY-barHight, sBwlr, barHight, TFT_GREEN);
+      barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY-sXi);
+      tft.fillRect (sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr), sRY+sHi-2*sXY-barHight-sXi, sBwlr, barHight, TFT_GREEN);
       
       barHight=100*TabR[i]/drawCnt;
-      barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY);
-      tft.fillRect (sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr)+sBwlr+1, sRY+sHi-2*sXY-barHight, sBwlr, barHight, TFT_RED);
+      barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY-sXi);
+      tft.fillRect (sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr)+sBwlr+1, sRY+sHi-2*sXY-barHight-sXi, sBwlr, barHight, TFT_RED);
 
-      tft.drawNumber(i+1, sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr)+sBwlr-3, sRY+sHi-2*sXY+sBm);
-      tft.drawFastVLine(sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr)+sBwlr*2+1, sRY+sHi-2*sXY+1, sBm, TFT_LIGHTGREY);
+      tft.drawNumber(i+1, sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr)+sBwlr-3, sRY+sHi-2*sXY+sBm-sXi);
+      tft.drawFastVLine(sRX+2*sXY+sBwlr+i*(sBwlr+sBmlr)+sBwlr*2+1, sRY+sHi-2*sXY+1-sXi, sBm, TFT_LIGHTGREY);
     }    
   } else if (statTab == sum_of_both) {
     for (int i=0; i<11; i++) {
       int barHight=100*TabS[i]/drawCnt;
       // Serial.print(i+2); Serial.print(" : "); Serial.print(barHight);
-      barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY);
+      barHight = map(barHight, 0, maxProb, 0, sHi-3*sXY-sXi);
       // Serial.print(" : "); Serial.println(barHight);
-      tft.fillRect (sRX+2*sXY+sBw+i*(sBw+sBm), sRY+sHi-2*sXY-barHight, sBw, barHight, TFT_BLUE);
-      tft.drawNumber(i+2, sRX+2*sXY+sBw+i*(sBw+sBm), sRY+sHi-2*sXY+sBm);
+      tft.fillRect (sRX+2*sXY+sBw+i*(sBw+sBm), sRY+sHi-2*sXY-barHight-sXi, sBw, barHight, TFT_BLUE);
+      tft.drawNumber(i+2, sRX+2*sXY+sBw+i*(sBw+sBm), sRY+sHi-2*sXY+sBm-sXi);
     }
   }
 }
@@ -108,7 +114,7 @@ void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, u_int32_t statCnt, int maxInd
   tft.drawRoundRect(sRX  , sRY  , sWi, sHi, 5, TFT_GOLD);
   tft.drawRoundRect(sRX+1, sRY+1, sWi, sHi, 5, TFT_GOLD);
   tft.drawFastVLine(sRX+2*sXY, sRY+sXY, sHi-2*sXY, TFT_BLACK);
-
+  
   tft.setFreeFont(TT1);
   tft.setTextColor(TFT_BLUE,TFT_WHITE);  tft.setTextSize(1);
   
@@ -133,4 +139,13 @@ void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, u_int32_t statCnt, int maxInd
   }  
 }
 
-
+void showSDError(TFT_eSPI &tft) {
+  tft.pushImage(SDX, SDY, sdcardiconWidth, sdcardiconHeight, sdcardicon, TFT_WHITE);
+  tft.setTextColor(TFT_WHITE);
+  tft.drawString("SD Card", SDXt, SDYt, 2);
+  tft.setTextColor(TFT_BLUE);
+  tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
+  tft.setTextColor(TFT_RED);
+  tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
+  tft.drawString("ERROR", SDX1e, SDYe, 2);
+}

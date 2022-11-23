@@ -53,10 +53,11 @@ extern const unsigned short *ptr_start;
 extern const unsigned short *ptr_stop;
 extern const unsigned int top_pos;
 
-const char MessageText1[] PROGMEM = "Press START to continue. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
+const char MessageText1[] PROGMEM = "Press ^ to continue or rotate <--> for statistics. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
 #define MessageLen 128 /*length of message*/
 
-void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab);
+void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab, char* titel);
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, int maxIndex, int deltaIndex);
+void showSDError(TFT_eSPI &tft);
 
 #endif

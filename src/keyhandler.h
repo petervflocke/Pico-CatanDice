@@ -38,5 +38,6 @@ extern RingBufCPP<struct Event, MAX_NUM_ELEMENTS> buf;
 void gpio_callback(uint gpio, uint32_t events);
 void key_clean();
 void key_none();
+bool checkBreak();
 
 #endif

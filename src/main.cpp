@@ -50,18 +50,11 @@ void setup()
   pinMode(pinA, INPUT_PULLUP);
   pinMode(pinB, INPUT_PULLUP);
 
-
   tft.init();   // old tft.begin();
   tft.setRotation(3);  // landscape upside down
-  tft.fillScreen(TFT_BLACK);
   tft.setSwapBytes(true);
 
-  tft.fillScreen(TFT_WHITE);
-  tft.pushImage(SDX, SDY, sdcardiconWidth, sdcardiconHeight, sdcardicon);
-  tft.setTextColor(TFT_WHITE);
-  tft.drawString("SD Card", SDXt, SDYt, 2);
-  tft.setTextColor(TFT_BLUE);
-  tft.drawString("   ?", SDX1e, SDYe, 2);
+  tft.pushImage(0, 0, catanWidth, catanHeight, catan);
   sdCardOK = SD.begin(PIN_SD_CS, SPI);
   if (sdCardOK) {
     sdCardOK = myLogger(SD);
@@ -73,11 +66,14 @@ void setup()
   }
 
   if (sdCardOK) {
-    tft.setTextColor(TFT_BLUE);
-    tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
-    tft.drawString("CARD OK", SDX2e, SDYe, 2);
-    delay(1000);
+    // tft.setTextColor(TFT_BLUE);
+    // tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
+    // tft.drawString("CARD OK", SDX2e, SDYe, 2);
+    while (gpio_get(pinBut)) {
+      delay(100);
+    }    
   } else {
+    showSDError(tft);
     tft.setTextColor(TFT_RED);
     while (gpio_get(pinBut)) {
       tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
@@ -86,7 +82,6 @@ void setup()
       delay(100);
     }    
   }
-
   tft.fillScreen(TFT_BLACK);
   tft.pushImage(0, 0, counterWidth, counterHeight, counter);
   for (unsigned long i=0; i<=(gHeight-1)*gWidth*1; i+=gWidth*4) {
@@ -95,8 +90,7 @@ void setup()
     tft.pushImage(rx, ry, gWidth, gHeight, space+i);
     delay(20);
   }
-  
-  // Prepare pins and buttons handling
+  // attached pin irq
   gpio_set_irq_enabled_with_callback(pinBut, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true, &gpio_callback);
   gpio_set_irq_enabled(pinA, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
   gpio_set_irq_enabled(pinB, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
@@ -129,8 +123,6 @@ void setup()
   for (int i=0; i<11; i++) {
     Serial.print(" S "); Serial.print(i+2); Serial.print(" : "); Serial.print(statTabSg[i]); Serial.print(" - "); Serial.println( double(statTabSg[i])/float(myStat.numberDraws)*100.0, 2 );
   }
-
-
 }
 
 
@@ -169,6 +161,7 @@ void loop()
 
   state_type current_state = random_waiting_for_press;
   state_type former_state = none;
+  bool doBreak;
 
 
   while (true) {
@@ -198,7 +191,6 @@ void loop()
       tft.pushImage(rx, ry, gWidth, gHeight, qq+(random(100)%2?1:-1)*random(4)*gWidth);
       delay(25);
 
-      // first_run = true;
       former_state = current_state;
     } 
     else if ( (current_state == random_waiting_for_release) ) {
@@ -255,6 +247,10 @@ void loop()
       tft.fillCircle(150-ledSize/2, 0+ledSize/2, ledSize/2, TFT_GREEN);
       tft.drawCircle(150-ledSize/2, 0+ledSize/2, ledSize/2, TFT_WHITE);
       for (unsigned long i=loop_i; i<=top_pos; i+=gWidth*steps) {
+        doBreak = checkBreak();
+        if (doBreak) {
+          break;
+        }        
         genTone();
         tft.pushImage(lx, ly, gWidth, gHeight, ptr_start+i);
         tft.pushImage(rx, ry, gWidth, gHeight, ptr_stop -i);
@@ -264,34 +260,45 @@ void loop()
         scrollDelay = slowdown[slowdown_index][1];
       }
       tft.pushImage(0, 0, counterWidth, ledSize+1, counter);
-      // rnd1 = 6;
-      // rnd2 = 6;
-      bool run1 = true;
-      bool run2 = true;
-      steps = slowdown[SlowDownEl-1][0];
-      for (unsigned long i=0; i<=top_pos; i+=gWidth*steps) {
-        genTone();
-        if (run1) {
-            tft.pushImage(lx, ly, gWidth, gHeight, ptr_start+i);
-            if (ptr_start+i >= digits[rnd1]) {
-              tft.pushImage(lx, ly, gWidth, gHeight, digits[rnd1]);
-              run1 = false;
-            }
+      if (!doBreak) {
+        // rnd1 = 6;
+        // rnd2 = 6;
+        bool run1 = true;
+        bool run2 = true;
+        steps = slowdown[SlowDownEl-1][0];
+        for (unsigned long i=0; i<=top_pos; i+=gWidth*steps) {
+          genTone();
+          if (run1) {
+              tft.pushImage(lx, ly, gWidth, gHeight, ptr_start+i);
+              if (ptr_start+i >= digits[rnd1]) {
+                tft.pushImage(lx, ly, gWidth, gHeight, digits[rnd1]);
+                run1 = false;
+              }
+          }
+          if (run2) {   
+              tft.pushImage(rx, ry, gWidth, gHeight, ptr_stop-i);
+              if (ptr_stop-i <= digits[rnd2]) {
+                tft.pushImage(rx, ry, gWidth, gHeight, digits[rnd2]);  
+                run2 = false;
+              }
+          }
+          if (!(run1 or run2)) {
+            break;
+          }
+          else {
+            delay(scrollDelay);
+            scrollDelay += slowdown[SlowDownEl-1][1];
+          }
+          doBreak = checkBreak();
+          if (doBreak) {
+            break;
+          }    
         }
-        if (run2) {   
-            tft.pushImage(rx, ry, gWidth, gHeight, ptr_stop-i);
-            if (ptr_stop-i <= digits[rnd2]) {
-              tft.pushImage(rx, ry, gWidth, gHeight, digits[rnd2]);  
-              run2 = false;
-            }
-        }
-        if (!(run1 or run2)) {
-          break;
-        }
-        else {
-          delay(scrollDelay);
-          scrollDelay += slowdown[SlowDownEl-1][1];
-        }
+      }
+      if (doBreak) {
+        tft.pushImage(lx, ly, gWidth, gHeight, digits[rnd1]);
+        tft.pushImage(rx, ry, gWidth, gHeight, digits[rnd2]); 
+        delay(scrollDelay);
       }
 
       // current_state = random_display;      
@@ -306,6 +313,7 @@ void loop()
         }
 
         delay(1000);
+        key_clean();        
         tft.pushImage(lx, ly, gWidth, gHeight, space);
         tft.pushImage(rx, ry, gWidth, gHeight, space);
         tft.fillRoundRect(rRX+4, rRY+4, rWi, rHi, 5, TFT_BLACK);
@@ -324,6 +332,11 @@ void loop()
         statTabR[rnd2-1] += 1;
         statTabS[rndSum-2] += 1;
         statCnt += 1;
+
+        statTabLg[rnd1-1] += 1;
+        statTabRg[rnd2-1] += 1;
+        statTabSg[rndSum-2] += 1;
+        myStat.numberDraws += 1;        
 
         //#define DEBUG_RANDOM
         #ifdef DEBUG_RANDOM
@@ -452,7 +465,7 @@ void loop()
       // drawBarChart(sum_of_both);
       // drawBarChart(left_and_Right);
 
-      drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
+      drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right, "old");
       // drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
       delay(200);
 
@@ -477,57 +490,42 @@ void loop()
     else if (current_state == show_statistics_Single) {
       if (current_state != former_state) {
         pt_song.disable();
-        drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right);
+        drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right, "Left & Right Dice");
         former_state = current_state;
       } 
       delay(100);
-      // current_state = wait_in_statistics;
-      // key_clean();
-      // key_none();
     }
     else if (current_state == show_statistics_Sum) {
       if (current_state != former_state) {
         pt_song.disable();
-        drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both);
+        drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both, "Both Dices");
         former_state = current_state;
       } 
       delay(100);
-      // current_state = wait_in_statistics;
-      // key_clean();
-      // key_none();
     }
     else if (current_state == show_statistics_SingleAll) {
       if (current_state != former_state) {
         pt_song.disable();
         if (sdCardOK) {
-          drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, left_and_Right);
-      } else {
-        tft.pushImage(SDX, SDY, sdcardiconWidth, sdcardiconHeight, sdcardicon, TFT_WHITE);
-        tft.setTextColor(TFT_WHITE);
-        tft.drawString("SD Card", SDXt, SDYt, 2);
-        tft.setTextColor(TFT_BLUE);
-        tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
-        tft.setTextColor(TFT_RED);
-        tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
-        tft.drawString("ERROR", SDX1e, SDYe, 2);
-      }
+          drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, left_and_Right, "All lefts & rights");
+        } else {
+          showSDError(tft);
+        }
         former_state = current_state;
       } 
       delay(100);
-      // current_state = wait_in_statistics;
-      // key_clean();
-      // key_none();
     }
     else if (current_state == show_statistics_SumAll) {
       if (current_state != former_state) {
         pt_song.disable();
-        drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, sum_of_both);
+        if (sdCardOK) {
+          drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, sum_of_both, "All both dices");
+        } else {
+          showSDError(tft);
+        }
         former_state = current_state;
       } 
       delay(100);
-      // current_state = wait_in_statistics;
-      // key_clean();
-      // key_none();
     }    
     else if (current_state == wait_in_statistics) {
       pt_song.disable();
