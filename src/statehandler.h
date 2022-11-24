@@ -10,8 +10,8 @@ typedef enum {
   random_waiting_for_press,     // 1
   random_waiting_for_release,   // 2
   random_slow_down,             // 3
-  random_break,                 // 4 
   random_display,               // 4
+  show_summury,
   show_statistics,              // 5 not used now
   show_statistics_Sum,          // 6
   show_statistics_Single,       // 7

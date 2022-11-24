@@ -54,10 +54,18 @@ extern const unsigned short *ptr_stop;
 extern const unsigned int top_pos;
 
 const char MessageText1[] PROGMEM = "Press ^ to continue or rotate <--> for statistics. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
+const char InfoText1[] PROGMEM = "Left: %d Right: %d Sum: %d Draw: %lu";
+const char InfoText2[] PROGMEM = "Current Duration: %02u:%02u:%02u";
+const char InfoText3[] PROGMEM = "Total Duration: %03u:%02u:%02u:%02u";
+const char InfoText4[] PROGMEM = "Number of Games: %lu";
+const char InfoText5[] PROGMEM = "Number of Draws: %lu";
+const char InfoText6[] PROGMEM = "SD Card: %s";
+
 #define MessageLen 128 /*length of message*/
 
 void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab, char* titel);
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, int maxIndex, int deltaIndex);
 void showSDError(TFT_eSPI &tft);
+void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt);
 
 #endif

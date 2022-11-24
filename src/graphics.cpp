@@ -1,5 +1,6 @@
 /* cSpell:disable */
 #include "Arduino.h"
+#include <string.h>
 #include <TFT_eSPI.h>
 #include "Free_Fonts.h"
 #include "graphics.h"
@@ -26,7 +27,6 @@ const unsigned short *ptr_start = ptr + ((gHeight-1)*gWidth*  3); // 1
 const unsigned short *ptr_stop  = ptr + ((gHeight-1)*gWidth*  9); // 1
 const unsigned int top_pos = (gHeight-1)*gWidth*6;
 
-void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t TabS[], u_int32_t drawCnt, BarChartType statTab, char *titel) {
   #define sRX   7 /* stat box upper x*/
   #define sRY  10 /* stat box uper y*/
   #define sWi 143 /* stat box width */
@@ -37,17 +37,21 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t T
   #define sBm   5 /* gap between bars */
   #define sBwlr 6 /* bar width */
   #define sBmlr 11 /* gap between bars */
-  
-  // scrollText1.deleteSprite();
+
+
+void drawInfoBox(TFT_eSPI &tft) {
   tft.pushImage(0, 0, counterWidth, counterHeight, counter);
   tft.fillRoundRect(sRX+4, sRY+4, sWi, sHi, 5, TFT_BLACK);
   tft.fillRoundRect(sRX  , sRY  , sWi, sHi, 5, TFT_WHITE);
   tft.drawRoundRect(sRX-1, sRY-1, sWi, sHi, 5, TFT_GOLD);
   tft.drawRoundRect(sRX  , sRY  , sWi, sHi, 5, TFT_GOLD);
   tft.drawRoundRect(sRX+1, sRY+1, sWi, sHi, 5, TFT_GOLD);
-  tft.drawFastVLine(sRX+2*sXY, sRY+sXY, sHi-2*sXY-sXi, TFT_BLACK);
+}
 
-  
+void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t TabS[], u_int32_t drawCnt, BarChartType statTab, char *titel) {
+
+  drawInfoBox(tft);
+  tft.drawFastVLine(sRX+2*sXY, sRY+sXY, sHi-2*sXY-sXi, TFT_BLACK);
   tft.setTextColor(TFT_BLUE,TFT_WHITE);
   tft.setTextFont(2);
   tft.drawCentreString(titel, 80, sRY+sHi-2*sXY+sBm, 1);
@@ -139,6 +143,41 @@ void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, u_int32_t statCnt, int maxInd
   }  
 }
 
+void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt) {
+
+  #define DY 13
+  #define DYS sRY
+  #define FONTn 1
+  char lineBuf[MessageLen];
+  int16_t dy = 0;
+
+  drawInfoBox(tft);  
+  tft.setTextColor(TFT_BLACK,TFT_WHITE);
+  // tft.setFreeFont(TT1);
+  tft.setTextSize(1);
+  snprintf_P(lineBuf, MessageLen, InfoText1, rndl, rndr, rndl+rndr, cnt );
+  tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
+  dy += DY;
+  snprintf_P(lineBuf, MessageLen, InfoText2, 2, 23, 40);
+  tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
+  dy += DY;
+  snprintf_P(lineBuf, MessageLen, InfoText3, 1, 2, 3, 50);
+  tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
+  dy += DY;
+  snprintf_P(lineBuf, MessageLen, InfoText4, 1000);
+  tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
+  dy += DY;
+  snprintf_P(lineBuf, MessageLen, InfoText5, 99999);
+  tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
+  dy += DY;  
+  snprintf_P(lineBuf, MessageLen, InfoText6, "Error");
+  tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);      
+}
+
+
+
+
+
 void showSDError(TFT_eSPI &tft) {
   tft.pushImage(SDX, SDY, sdcardiconWidth, sdcardiconHeight, sdcardicon, TFT_WHITE);
   tft.setTextColor(TFT_WHITE);
@@ -149,3 +188,5 @@ void showSDError(TFT_eSPI &tft) {
   tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
   tft.drawString("ERROR", SDX1e, SDYe, 2);
 }
+
+

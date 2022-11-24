@@ -24,23 +24,31 @@ void initState () {
   stateTable[random_waiting_for_press]  [e_down]  =  random_waiting_for_release;
   stateTable[random_waiting_for_release][e_up]    =  random_slow_down;
   stateTable[random_slow_down]          [none]    =  random_display;
+
   stateTable[random_display]            [e_up]    =  before_waiting_for_press;
-  stateTable[random_display]            [e_right] =  show_statistics_Single;
-  stateTable[random_display]            [e_left]  =  show_statistics_Sum;
-  stateTable[show_statistics]           [none]    =  wait_in_statistics;
-  stateTable[show_statistics_Single]    [e_up]    =  before_waiting_for_press;
-  stateTable[show_statistics_Sum]       [e_up]    =  before_waiting_for_press;
-  stateTable[show_statistics_Single]    [e_right] =  show_statistics_SingleAll;
-  stateTable[show_statistics_Single]    [e_left]  =  show_statistics_Sum;
-  stateTable[show_statistics_Sum]       [e_left]  =  show_statistics_SumAll;
-  stateTable[show_statistics_Sum]       [e_right] =  show_statistics_Single;
+  stateTable[random_display]            [e_right] =  show_statistics_Single; 
+  stateTable[random_display]            [e_left]  =  show_summury;
+
+  stateTable[show_summury]              [e_up]    =  before_waiting_for_press;
+  stateTable[show_summury]              [e_right] =  show_statistics_Single;
+  stateTable[show_summury]              [e_left]  =  show_statistics_SumAll;
   
+  stateTable[show_statistics]           [none]    =  wait_in_statistics;
+
+  stateTable[show_statistics_Single]    [e_up]    =  before_waiting_for_press;
+  stateTable[show_statistics_Single]    [e_right] =  show_statistics_Sum;
+  stateTable[show_statistics_Single]    [e_left]  =  show_summury;
+  
+  stateTable[show_statistics_Sum]       [e_up]    =  before_waiting_for_press;
+  stateTable[show_statistics_Sum]       [e_right] =  show_statistics_SingleAll;
+  stateTable[show_statistics_Sum]       [e_left]  =  show_statistics_Single;
+
   stateTable[show_statistics_SingleAll] [e_up]    =  before_waiting_for_press;
   stateTable[show_statistics_SingleAll] [e_right] =  show_statistics_SumAll;
-  stateTable[show_statistics_SingleAll] [e_left]  =  show_statistics_Single;
+  stateTable[show_statistics_SingleAll] [e_left]  =  show_statistics_Sum;
 
   stateTable[show_statistics_SumAll]    [e_up]    =  before_waiting_for_press;
-  stateTable[show_statistics_SumAll]    [e_right] =  show_statistics_Sum;
+  stateTable[show_statistics_SumAll]    [e_right] =  show_summury;
   stateTable[show_statistics_SumAll]    [e_left]  =  show_statistics_SingleAll;
 
 

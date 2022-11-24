@@ -526,7 +526,15 @@ void loop()
         former_state = current_state;
       } 
       delay(100);
-    }    
+    }
+    else if (current_state == show_summury) {
+      if (current_state != former_state) {
+        pt_song.disable();
+        drawInfoText(tft, rnd1, rnd2, statCnt);
+        former_state = current_state;
+      } 
+      delay(100);
+    } 
     else if (current_state == wait_in_statistics) {
       pt_song.disable();
       delay(20);
