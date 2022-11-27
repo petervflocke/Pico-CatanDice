@@ -40,6 +40,16 @@
 #define sBm   5 /* gap between bars */
 
 
+/* Useful Macros for getting elapsed time */
+#define SECS_PER_MIN  (60UL)
+#define SECS_PER_HOUR (3600UL)
+#define SECS_PER_DAY  (SECS_PER_HOUR * 24L)
+#define numberOfSeconds(_time_) (_time_ % SECS_PER_MIN)  
+#define numberOfMinutes(_time_) ((_time_ / SECS_PER_MIN) % SECS_PER_MIN) 
+#define numberOfHours(_time_) (( _time_% SECS_PER_DAY) / SECS_PER_HOUR)
+#define elapsedDays(_time_) ( _time_ / SECS_PER_DAY)  
+
+
 typedef enum {
   left_and_Right,  
   sum_of_both
@@ -54,18 +64,20 @@ extern const unsigned short *ptr_stop;
 extern const unsigned int top_pos;
 
 const char MessageText1[] PROGMEM = "Press ^ to continue or rotate <--> for statistics. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
-const char InfoText1[] PROGMEM = "Left: %d Right: %d Sum: %d Draw: %lu";
-const char InfoText2[] PROGMEM = "Current Duration: %02u:%02u:%02u";
-const char InfoText3[] PROGMEM = "Total Duration: %03u:%02u:%02u:%02u";
-const char InfoText4[] PROGMEM = "Number of Games: %lu";
-const char InfoText5[] PROGMEM = "Number of Draws: %lu";
-const char InfoText6[] PROGMEM = "SD Card: %s";
+const char InfoText1[] PROGMEM = "<%lu> : %d+%d=%d";
+const char InfoText2[] PROGMEM = "Cur.Time: %02u:%02u:%02u";
+const char InfoText3[] PROGMEM = "Tot.Time: %02u:%02u:%02u:%02u";
+const char InfoText4[] PROGMEM = "Games: %lu";
+const char InfoText5[] PROGMEM = "All draws: %lu";
+const char InfoText6[] PROGMEM = "SD Card Error";
+const char InfoText7[] PROGMEM = "Line error: %lu";
+const char InfoText8[] PROGMEM = "SD Card: %luMB free";
 
 #define MessageLen 128 /*length of message*/
 
 void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab, char* titel);
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, int maxIndex, int deltaIndex);
 void showSDError(TFT_eSPI &tft);
-void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt);
+void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, long);
 
 #endif

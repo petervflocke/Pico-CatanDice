@@ -5,6 +5,7 @@
 #include "Free_Fonts.h"
 #include "graphics.h"
 #include "statehandler.h"
+#include "logger.h"
 
 // table with pointers of digits from reel data
 // const unsigned short *space = (unsigned short *)reel;
@@ -143,35 +144,51 @@ void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, u_int32_t statCnt, int maxInd
   }  
 }
 
-void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt) {
+
+void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, long sdFree) {
 
   #define DY 13
   #define DYS sRY
   #define FONTn 1
   char lineBuf[MessageLen];
   int16_t dy = 0;
+  unsigned long currentTime = (millis() - myStat.currentDur)/1000;
+  unsigned long allDuration = myStat.allDur / 1000;
 
   drawInfoBox(tft);  
   tft.setTextColor(TFT_BLACK,TFT_WHITE);
-  // tft.setFreeFont(TT1);
+  tft.setTextFont(FONTn);
   tft.setTextSize(1);
   snprintf_P(lineBuf, MessageLen, InfoText1, rndl, rndr, rndl+rndr, cnt );
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;
-  snprintf_P(lineBuf, MessageLen, InfoText2, 2, 23, 40);
+  snprintf_P(lineBuf, MessageLen, InfoText2, numberOfHours(currentTime), numberOfMinutes(currentTime), numberOfSeconds(currentTime));
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;
-  snprintf_P(lineBuf, MessageLen, InfoText3, 1, 2, 3, 50);
+  snprintf_P(lineBuf, MessageLen, InfoText3, elapsedDays(allDuration), numberOfHours(allDuration), numberOfMinutes(allDuration), numberOfSeconds(allDuration));
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;
-  snprintf_P(lineBuf, MessageLen, InfoText4, 1000);
+  snprintf_P(lineBuf, MessageLen, InfoText4, myStat.numberGames);
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;
-  snprintf_P(lineBuf, MessageLen, InfoText5, 99999);
+  snprintf_P(lineBuf, MessageLen, InfoText5, myStat.numberDraws);
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;  
-  snprintf_P(lineBuf, MessageLen, InfoText6, "Error");
-  tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);      
+  if (sdCardOK) {
+    snprintf_P(lineBuf, MessageLen, InfoText8, sdFree);
+  } else if (myStat.inputError) {
+    snprintf_P(lineBuf, MessageLen, InfoText7, myStat.lineNumberError);
+  } else {
+    snprintf_P(lineBuf, MessageLen, InfoText6);
+  }
+  tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
+
+
+/*
+ https://forum.arduino.cc/t/arduino-timer-convert-millis-to-days-hours-min/42323
+*/
+
+
 }
 
 

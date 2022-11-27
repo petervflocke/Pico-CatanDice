@@ -1,6 +1,5 @@
 /* cSpell:disable */
 #include "Arduino.h"
-#include <SD.h>
 #include "logger.h"
 #include <string.h>
 
@@ -27,7 +26,7 @@ void stringdump(char* str) {
   }
 }
 
-bool readLine(File &f, char* line, size_t maxLen) {
+bool readLine(File32 &f, char* line, size_t maxLen) {
   for (size_t n = 0; n < maxLen; n++) {
     int c = f.read();
     if ( c < 0 && n == 0) return false;  // EOF
@@ -56,14 +55,15 @@ bool readVals(char* line, variableTab_t variableTab) {
   return (!(*ptr || i != 8));
 }
 
-bool myLogger(SDClass &myCard) {
-  File myFile;
+bool myLogger(SdFat32 &myCard) {
+  File32 myFile;
   boolean sdCardOK=true;
   bool headerOK = false;
   char lineBuf[CSVMessageLen];
   
-  myFile = myCard.open(fileName, FILE_READ);
-  if (myFile) {
+  // myFile = myCard.open(fileName, FILE_READ);
+  if (myFile.open(fileName, FILE_READ)) {
+    Serial.print("File OK1: "); Serial.println(fileName);
     if (readLine(myFile, lineBuf, CSVMessageLen)) {
       Serial.print("File OK: "); Serial.println(fileName);
       Serial.println(lineBuf);
@@ -84,22 +84,22 @@ bool myLogger(SDClass &myCard) {
     Serial.print("Creating a proper file: "); Serial.println(fileName);
     // try to remove
     myCard.remove(fileName);
-    myFile = myCard.open(fileName, FILE_WRITE);
-    if (myFile) {
+    // myFile = myCard.open(fileName, FILE_WRITE);
+    if (myFile.open(fileName, FILE_WRITE)) {
       myFile.write(CSVHeader);
       myFile.write("\n");
       myFile.close();
     }
     else {
-      Serial.print("New file cannot be created"); Serial.println(fileName);  
+      Serial.print("New file cannot be created: "); Serial.println(fileName);  
       sdCardOK = false;
     }
   }
   return sdCardOK;
 }
 
-bool saveResult(SDClass &myCard, uint32_t var1, uint32_t var2, uint32_t var3, uint32_t var4, uint32_t var5, uint32_t var6, uint32_t var7, uint32_t var8) {
-  File myFile;
+bool saveResult(uint32_t var1, uint32_t var2, uint32_t var3, uint32_t var4, uint32_t var5, uint32_t var6, uint32_t var7, uint32_t var8) {
+  File32 myFile;
   char lineBuf[CSVMessageLen];
   snprintf_P(lineBuf, CSVMessageLen, 
         CSVMessage,
@@ -116,16 +116,16 @@ bool saveResult(SDClass &myCard, uint32_t var1, uint32_t var2, uint32_t var3, ui
   // Serial.print(var8);Serial.println();
   Serial.print("Data :"); Serial.println(lineBuf);
   // Serial.print("Str :"); stringdump(lineBuf);
-  myFile = myCard.open(fileName, FILE_WRITE);
-  if (myFile) {
+  // myFile = myCard.open(fileName, FILE_WRITE);
+  if (myFile.open(fileName, FILE_WRITE)) {
     myFile.write(lineBuf, strlen(lineBuf));
     myFile.close();
     return true;
   } else return false;
 }
 
-bool readResult(SDClass &myCard) {
-  File myFile;
+bool readResult() {
+  File32 myFile;
   char lineBuf[CSVMessageLen];
   variableTab_t variableTab;
   
@@ -133,9 +133,10 @@ bool readResult(SDClass &myCard) {
   unsigned long firstDur = 0;
   unsigned long lastDur = 0;
   myStat.inputError = false;
+  myStat.lineNumberError = 0;
 
-  myFile = myCard.open(fileName, FILE_READ);
-  if (myFile) {
+  // myFile = myCard.open(fileName, FILE_READ);
+  if (myFile.open(fileName, FILE_READ)) {
     readLine(myFile, lineBuf, CSVMessageLen);
     Serial.print(ln); Serial.print(": "); Serial.println(lineBuf);
     while (myFile.available() && !myStat.inputError) {
@@ -172,5 +173,5 @@ bool readResult(SDClass &myCard) {
     }
     myFile.close();
   }
-  return !myStat.inputError;
+  return myStat.inputError;
 }

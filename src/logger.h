@@ -4,11 +4,16 @@
 #define LOGER_H
 
 #include "Arduino.h"
+#include "SdFat.h"
 // Select for SD card reader
-#define PIN_SD_CS 17
+const uint8_t SD_CS_PIN = 17;
+
+// #define SD_CONFIG SdSpiConfig(SD_CS_PIN, DEDICATED_SPI, SD_SCK_MHZ(4))
+#define SD_CONFIG SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(4))
+
 
 // name of the file on SD card to store results
-#define fileName  "dice.csv"
+#define fileName "dice.csv"
 
 extern boolean sdCardOK;
 
@@ -39,10 +44,10 @@ extern statTab_t  statTabRg;
   
 extern stat_t myStat;
 
-bool myLogger(SDClass &myCard);
-bool saveResult(SDClass &myCard, uint32_t var1, uint32_t var2, uint32_t var3, uint32_t var4, uint32_t var5, uint32_t var6, uint32_t var7, uint32_t var8);
-bool readVals(File &f, long &v1, long &v2);
-bool readLine(File &f, char* line, size_t maxLen);
-bool readResult(SDClass &myCard);
+bool myLogger(SdFat32 &myCard);
+bool saveResult(uint32_t var1, uint32_t var2, uint32_t var3, uint32_t var4, uint32_t var5, uint32_t var6, uint32_t var7, uint32_t var8);
+bool readVals(File32 &f, long &v1, long &v2);
+bool readLine(File32 &f, char* line, size_t maxLen);
+bool readResult();
 
 #endif

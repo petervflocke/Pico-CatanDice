@@ -12,7 +12,7 @@
 #include "Free_Fonts.h"
 #include <RingBufCPP.h>
 #include <ptScheduler.h>
-#include <SD.h>
+#include "SdFat.h"
 #include "settings.h"
 #include "songs.h"
 #include "logger.h"
@@ -33,16 +33,18 @@ ptScheduler  pt_song = ptScheduler(1);
 // ring buffer
 RingBufCPP<struct Event, MAX_NUM_ELEMENTS> buf;
 
+SdFat32 sd;
+
 boolean sdCardOK;
 int noteIndex;
 state_type stateTable[stateNumber][eventNumber];
 
-
-
 void setup()
 {
   Serial.begin(115200);
-  // while (!Serial);
+  // while (!Serial) {
+  //   yield();
+  // }
   
   // Prepare pins and buttons handling
   pinMode(LED_PIN, OUTPUT);
@@ -55,20 +57,28 @@ void setup()
   tft.setSwapBytes(true);
 
   tft.pushImage(0, 0, catanWidth, catanHeight, catan);
-  sdCardOK = SD.begin(PIN_SD_CS, SPI);
+  // sdCardOK = SD.begin(PIN_SD_CS, SPI);
+  // sdCardOK = sd.cardBegin(SD_CONFIG);
+  sdCardOK = sd.begin(SD_CONFIG);
   if (sdCardOK) {
-    sdCardOK = myLogger(SD);
+    Serial.println("Start reading from SD");
+    long lFreeKB = sd.vol()->freeClusterCount();
+    lFreeKB *= sd.vol()->sectorsPerCluster()/2;
+
+    Serial.println(lFreeKB);
+
+    sdCardOK = myLogger(sd);
   }
   
   myStat.currentDur = millis();
   if (sdCardOK) {
-    sdCardOK = saveResult(SD, 1, 0, 0, 0, 0, 0, 0, myStat.currentDur);
+    Serial.println("Start writing to SD");
+    sdCardOK = saveResult(1, 0, 0, 0, 0, 0, 0, myStat.currentDur);
   }
 
   if (sdCardOK) {
-    // tft.setTextColor(TFT_BLUE);
-    // tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
-    // tft.drawString("CARD OK", SDX2e, SDYe, 2);
+    tft.setTextColor(TFT_BLUE);
+    tft.drawString("CARD OK", SDX2e, SDYe, 2);
     while (gpio_get(pinBut)) {
       delay(100);
     }    
@@ -96,15 +106,27 @@ void setup()
   gpio_set_irq_enabled(pinB, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE , true);
 
   initState();
-  unsigned long tt = millis();
-  Serial.println("Start reading");
-  
-  if (readResult(SD)) {
-    Serial.println("Reading ok");  
-  };
+
+  // unsigned long tt = millis();
+  if (sdCardOK) {
+    // Serial.println("Start reading");
+    if (sdCardOK=!readResult()) {
+      // Serial.println("Reading ok");  
+    };
+  } else myStat.inputError = false;
+
+
+  // uint32_t freeKB = SD.vol()->freeClusterCount();
+  // freeKB *= SD.vol()->blocksPerCluster()/2;
+  // Serial.print("Free space KB: ");
+  // Serial.println(freeKB);
+
+
+/*   
   Serial.print("Stop reading after: ");
   Serial.println(millis()-tt);
   // delay(1500-tt);
+
 
   Serial.print("allDur     : "); Serial.println(myStat.allDur);
   Serial.print("currentDur : "); Serial.println(myStat.currentDur);
@@ -123,6 +145,7 @@ void setup()
   for (int i=0; i<11; i++) {
     Serial.print(" S "); Serial.print(i+2); Serial.print(" : "); Serial.print(statTabSg[i]); Serial.print(" - "); Serial.println( double(statTabSg[i])/float(myStat.numberDraws)*100.0, 2 );
   }
+*/
 }
 
 
@@ -309,7 +332,7 @@ void loop()
       if (current_state != former_state) {
 
         if (sdCardOK) {
-          sdCardOK = saveResult(SD, 0, rnd1, rnd2, duration1, duration2, seedL, seedR, millis());
+          sdCardOK = saveResult(0, rnd1, rnd2, duration1, duration2, seedL, seedR, millis());
         }
 
         delay(1000);
@@ -530,7 +553,9 @@ void loop()
     else if (current_state == show_summury) {
       if (current_state != former_state) {
         pt_song.disable();
-        drawInfoText(tft, rnd1, rnd2, statCnt);
+          long lFreeKB = sd.vol()->freeClusterCount();
+          lFreeKB *= sd.vol()->sectorsPerCluster()/2;
+        drawInfoText(tft, rnd1, rnd2, statCnt, lFreeKB);
         former_state = current_state;
       } 
       delay(100);
