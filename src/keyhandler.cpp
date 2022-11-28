@@ -6,11 +6,13 @@ unsigned long stime = to_ms_since_boot(get_absolute_time());
 const int delayTime = 20; // Delay for every push button may vary
 
 void gpio_callback(uint gpio, uint32_t events) {
-static volatile int last_delta = 0;
-static volatile int last_seq = 0;
-static volatile int last_remainder = 0;
-static volatile int last_cycles = 0;
-static volatile byte xstate = LOW;
+  static volatile int enc_result = 0;
+  static volatile int enc_delta  = 0;
+  // https://hifiduino.wordpress.com/2010/10/20/rotaryencoder-hw-sw-no-debounce/
+  static const int8_t enc_states[] = {0,-1,1,0,1,0,0,-1,-1,0,0,1,0,1,-1,0}; // pin states table
+  static uint8_t old_AB = 0;
+  int val;
+  static volatile byte xstate = LOW;
 
   struct Event e;
   if (gpio == pinBut) {
@@ -31,41 +33,37 @@ static volatile byte xstate = LOW;
         buf.add(e);  // Add it to the ring buffer
     }
   } else if (gpio == pinA || gpio == pinB ) {
+        // Debuncing on hardware level
+        old_AB <<= 2;                                                   //remember previous state
+        old_AB |= ( ((gpio_get(pinB) << 1) | gpio_get(pinA)) & 0x03 );  //add current state
+        enc_result = ( enc_states[( old_AB & 0x0f )] );                 // use table to find the direction
 
-        #define steps_per_cycle 4
-        int delta = 0;
-        uint a_state = gpio_get(pinA);
-        uint b_state = gpio_get(pinB);
-        int current_seq = (a_state ^ b_state) | b_state << 1;
-        if (current_seq != last_seq) {
-          delta = (current_seq - last_seq) % 4;
-          if (delta == 3) {
-              delta = -1;
-          }
-          else if (delta == 2) {
-              delta = copysign(delta, last_delta);
-          }
-          last_delta = delta;
-          last_seq = current_seq;
-          last_remainder += delta;
-          last_cycles = last_remainder;
-          last_remainder %= steps_per_cycle;
-          // e.pinState = 0;
-          // e.index = xindex++;
-          e.pinNum = 0;
-          e.timestamp = millis();
-          if ( last_cycles == 1 ) {
-              e.direction = e_right;
-              buf.add(e);
-          }
-          else if (last_cycles == -1) {
-            e.direction = e_left;
+        // https://www.mikrocontroller.net/articles/Drehgeber => count number of 1 step encoder
+        if( enc_result & 1 ) {                                          // check if there was a proper rotation
+          enc_delta += (enc_result & 2) - 1;                            // and count the rotation
+        }
+
+        val = enc_delta;                                                // calculate for given encoder type
+        switch (ENCODER_TYP) {  // 1,2 or 4 steps resolution encoder
+          case  2: enc_delta = val & 1; val >>= 1; break;
+          case  4: enc_delta = val & 3; val >>= 2; break;
+          default: enc_delta = 0; break;
+        }
+
+        e.pinNum = 0;
+        e.timestamp = millis();
+
+        if ( val == 1 ) {
+            e.direction = e_right;
             buf.add(e);
-          }
-          else {
-            ;          
-          }
-        }  
+        }
+        else if ( val == -1) {
+          e.direction = e_left;
+          buf.add(e);
+        }
+        else {
+          ;
+        }
   }
 }
 

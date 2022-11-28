@@ -553,9 +553,7 @@ void loop()
     else if (current_state == show_summury) {
       if (current_state != former_state) {
         pt_song.disable();
-          long lFreeKB = sd.vol()->freeClusterCount();
-          lFreeKB *= sd.vol()->sectorsPerCluster()/2;
-        drawInfoText(tft, rnd1, rnd2, statCnt, lFreeKB);
+        drawInfoText(tft, rnd1, rnd2, statCnt, sd);
         former_state = current_state;
       } 
       delay(100);

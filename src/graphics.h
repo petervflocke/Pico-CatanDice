@@ -4,6 +4,7 @@
 #define GRAPHICS_H
 
 #include "Arduino.h"
+#include "SdFat.h"
 #include "counter.h"
 #include "reelpic.h"
 
@@ -71,13 +72,13 @@ const char InfoText4[] PROGMEM = "Games: %lu";
 const char InfoText5[] PROGMEM = "All draws: %lu";
 const char InfoText6[] PROGMEM = "SD Card Error";
 const char InfoText7[] PROGMEM = "Line error: %lu";
-const char InfoText8[] PROGMEM = "SD Card: %luMB free";
+const char InfoText8[] PROGMEM = "SD: %lukB free";
 
 #define MessageLen 128 /*length of message*/
 
 void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab, char* titel);
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, int maxIndex, int deltaIndex);
 void showSDError(TFT_eSPI &tft);
-void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, long);
+void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 &myCard);
 
 #endif

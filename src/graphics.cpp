@@ -145,7 +145,7 @@ void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, u_int32_t statCnt, int maxInd
 }
 
 
-void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, long sdFree) {
+void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 &myCard) {
 
   #define DY 13
   #define DYS sRY
@@ -159,7 +159,7 @@ void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, long sdF
   tft.setTextColor(TFT_BLACK,TFT_WHITE);
   tft.setTextFont(FONTn);
   tft.setTextSize(1);
-  snprintf_P(lineBuf, MessageLen, InfoText1, rndl, rndr, rndl+rndr, cnt );
+  snprintf_P(lineBuf, MessageLen, InfoText1, cnt, rndl, rndr, rndl+rndr);
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;
   snprintf_P(lineBuf, MessageLen, InfoText2, numberOfHours(currentTime), numberOfMinutes(currentTime), numberOfSeconds(currentTime));
@@ -175,7 +175,9 @@ void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, long sdF
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;  
   if (sdCardOK) {
-    snprintf_P(lineBuf, MessageLen, InfoText8, sdFree);
+    long lFreeKB = myCard.vol()->freeClusterCount();
+    lFreeKB *= myCard.vol()->sectorsPerCluster()/2;
+    snprintf_P(lineBuf, MessageLen, InfoText8, lFreeKB);
   } else if (myStat.inputError) {
     snprintf_P(lineBuf, MessageLen, InfoText7, myStat.lineNumberError);
   } else {

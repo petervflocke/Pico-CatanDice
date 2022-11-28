@@ -13,6 +13,7 @@
 #define pinBut 7
 #define pinA   8
 #define pinB   9
+#define ENCODER_TYP 4 /* 1, 2, 4 steps encoder */
 
 typedef enum {
   e_none=0,
