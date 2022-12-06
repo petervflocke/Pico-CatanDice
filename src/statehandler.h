@@ -7,19 +7,22 @@
 
 typedef enum {
   none=0,                       // 0
-  random_waiting_for_press,     // 1
-  random_waiting_for_release,   // 2
-  random_slow_down,             // 3
-  random_display,               // 4
+  random_waiting_for_press,     
+  random_waiting_for_release,   
+  random_slow_down,             
+  random_display,               
   show_summury,
   show_statistics,              // 5 not used now
-  show_statistics_Sum,          // 6
-  show_statistics_Single,       // 7
-  show_statistics_SumAll,       // 8
-  show_statistics_SingleAll,    // 9
+  show_statistics_Sum,          
+  show_statistics_Single,       
+  show_statistics_SumAll,       
+  show_statistics_SingleAll,    
   wait_in_statistics,           // 10 not used now
-  before_waiting_for_press,     // 11
-  thened                        // 12
+  before_waiting_for_press,     
+  screen_saver,
+  ibacklight,
+  dbacklight,
+  thened                        
 } state_type;
 #define stateNumber (thened-none+1)
 

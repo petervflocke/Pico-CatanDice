@@ -61,27 +61,24 @@ void setup()
   // sdCardOK = sd.cardBegin(SD_CONFIG);
   sdCardOK = sd.begin(SD_CONFIG);
   if (sdCardOK) {
-    Serial.println("Start reading from SD");
-    long lFreeKB = sd.vol()->freeClusterCount();
-    lFreeKB *= sd.vol()->sectorsPerCluster()/2;
-
-    Serial.println(lFreeKB);
-
+    // delay(1000);
+    // Serial.println("Start reading from SD");
+    // long lFreeKB = sd.vol()->freeClusterCount();
+    // lFreeKB *= sd.vol()->sectorsPerCluster()/2;
+    // Serial.println(lFreeKB);
     sdCardOK = myLogger(sd);
   }
   
   myStat.currentDur = millis();
   if (sdCardOK) {
-    Serial.println("Start writing to SD");
+    // Serial.println("Start writing to SD");
     sdCardOK = saveResult(1, 0, 0, 0, 0, 0, 0, myStat.currentDur);
   }
 
   if (sdCardOK) {
-    tft.setTextColor(TFT_BLUE);
-    tft.drawString("CARD OK", SDX2e, SDYe, 2);
-    while (gpio_get(pinBut)) {
-      delay(100);
-    }    
+    tft.setTextColor(TFT_WHITE);
+    tft.drawString("SD card OK", SDX2e, SDYe, 2);
+    delay(2000);
   } else {
     showSDError(tft);
     tft.setTextColor(TFT_RED);
@@ -167,6 +164,8 @@ void loop()
   int rndSum;
   int messageGLen;
   int messageIndex;
+  unsigned long screenSaver = 0;
+  
     
   unsigned long loop_i;
   int loop_j;
@@ -186,6 +185,8 @@ void loop()
   state_type former_state = none;
   bool doBreak;
 
+  #define MAXBACKLIGHT 16
+  int backlight = MAXBACKLIGHT;
 
   while (true) {
     if (!buf.isEmpty())
@@ -199,9 +200,38 @@ void loop()
       // Serial.print("->");
       // Serial.println(current_state);
       former_state = current_state;
-    } */
+    }
+*/
 
+    if (current_state == screen_saver) {
+      if (current_state != former_state) {
+        tft.pushImage(0, 0, catanWidth, catanHeight, catan);
+        former_state = current_state;
+      }
+      ;
+    } 
+    if ( (current_state == ibacklight) || (current_state == dbacklight) ) {
+      if (current_state != former_state) {
+        int bl = (current_state == ibacklight)? +1:-1;
+        backlight += bl;
+        if ( backlight < 1  ) backlight = 1;
+        if ( backlight > MAXBACKLIGHT ) backlight = MAXBACKLIGHT;
+        Serial.println(map(backlight, 1, MAXBACKLIGHT, 1, 128));
+        if (backlight == MAXBACKLIGHT) 
+          analogWrite(TFT_BL, 255);
+        else
+          analogWrite(TFT_BL, map(backlight, 1, MAXBACKLIGHT, 1, 128));
+        former_state = current_state;
+      }
+      key_clean();
+      key_none();      
+    }    
     if (current_state == random_waiting_for_press) {
+      if (current_state != former_state) {
+        tft.pushImage(0, 0, counterWidth, counterHeight, counter);
+        screenSaver = millis();
+        former_state = current_state;
+      }
       if (pt_random_waiting_for_press.call()) {
         tone(BuzzerPin,NOTE_G2, 6);
         delay(5);
@@ -214,7 +244,11 @@ void loop()
       tft.pushImage(rx, ry, gWidth, gHeight, qq+(random(100)%2?1:-1)*random(4)*gWidth);
       delay(25);
 
-      former_state = current_state;
+      if (millis() - screenSaver > screenSaverTimeout) {
+        // current_state = screen_saver;
+        key_clean();
+        key_none();
+      }
     } 
     else if ( (current_state == random_waiting_for_release) ) {
       // if (first_run) {

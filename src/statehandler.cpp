@@ -22,6 +22,12 @@ void initState () {
   // initiate button and none-button actions for existing machine states
   // current state + button direction => new state
   stateTable[random_waiting_for_press]  [e_down]  =  random_waiting_for_release;
+  stateTable[random_waiting_for_press]  [none]    =  screen_saver;
+  stateTable[random_waiting_for_press]  [e_right] =  ibacklight;
+  stateTable[random_waiting_for_press]  [e_left]  =  dbacklight;
+  stateTable[ibacklight]                [none]    =  random_waiting_for_press;
+  stateTable[dbacklight]                [none]    =  random_waiting_for_press;
+
   stateTable[random_waiting_for_release][e_up]    =  random_slow_down;
   stateTable[random_slow_down]          [none]    =  random_display;
 
@@ -51,13 +57,18 @@ void initState () {
   stateTable[show_statistics_SumAll]    [e_right] =  show_summury;
   stateTable[show_statistics_SumAll]    [e_left]  =  show_statistics_SingleAll;
 
-
-
-/*   stateTable[wait_in_statistics]        [e_up]    =  before_waiting_for_press;
+/*
+  stateTable[wait_in_statistics]        [e_up]    =  before_waiting_for_press;
   stateTable[wait_in_statistics]        [e_right] =  show_statistics_Single;
-  stateTable[wait_in_statistics]        [e_left]  =  show_statistics_Sum; */
+  stateTable[wait_in_statistics]        [e_left]  =  show_statistics_Sum;
+*/
 
   stateTable[before_waiting_for_press]  [none]    =  random_waiting_for_press;
+
+  stateTable[screen_saver]              [e_up]    =  random_waiting_for_press;
+  stateTable[screen_saver]              [e_right] =  random_waiting_for_press;
+  stateTable[screen_saver]              [e_left]  =  random_waiting_for_press;
+
 }
   
 
