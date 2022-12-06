@@ -217,7 +217,31 @@ void showSDError(TFT_eSPI &tft) {
   tft.drawString("ERROR", SDX1e, SDYe, 2);
 }
 
-void nextBird(TFT_eSPI &tft, const unsigned int BirdX, const unsigned int BirdY, const unsigned int i) {
+void restoreBack(TFT_eSPI &tft, unsigned int posX, unsigned int posY, unsigned int b_width, unsigned int b_hight, unsigned int s_width, const unsigned short *sourceBuf) {
+  /*
+  put cut out bacground image starting at posX, posY
+  in size = b_hight x b_width
+  background image s_width and ptr is needed
+  */
+
+  #define maxBufSize catanWidth*32 /* max size 32 lines from full width background*/
+
+  unsigned short backBuf[maxBufSize]; // "sprite" max size screen width * 32 lines / replace with dynamic malloc?
+  unsigned int addr = 0;
+  unsigned int startIdx = posY*s_width + posX;
+  
+  if (b_width*b_hight < maxBufSize) { // check for too big sprite, which does not fit into backBuf
+    for (unsigned short sprY = 0; sprY < b_hight; sprY++) {
+      for (unsigned short sprX = 0; sprX < b_width; sprX++) {
+        backBuf[addr++] = sourceBuf[startIdx+sprX];
+      }
+      startIdx += catanWidth;
+    }
+    tft.pushImage(posX, posY, b_width, b_hight, backBuf);  
+  }
+}
+
+/* void nextBird(TFT_eSPI &tft, unsigned int BirdX, unsigned int BirdY, unsigned int i) {
 
   unsigned short birdBuf[MAX_BIRD_SIZE];
   unsigned int addr = 0;
@@ -225,13 +249,34 @@ void nextBird(TFT_eSPI &tft, const unsigned int BirdX, const unsigned int BirdY,
 
   tft.pushImage(BirdX + tabBirds[i].bx, BirdY + tabBirds[i].by, tabBirds[i].b_width, tabBirds[i].b_height, tabBirds[i].bird, TFT_WHITE);
   delay(BirdD);
-  for (unsigned short sprY = 0; sprY < tabBirds[i].b_height; sprY++) {
+   for (unsigned short sprY = 0; sprY < tabBirds[i].b_height; sprY++) {
     for (unsigned short sprX = 0; sprX < tabBirds[i].b_width; sprX++) {
       birdBuf[addr++] = catan[startIdx+sprX];
     }
     startIdx += catanWidth;
   }
-  tft.pushImage(BirdX + tabBirds[i].bx, BirdY + tabBirds[i].by, tabBirds[i].b_width, tabBirds[i].b_height, birdBuf);
+  tft.pushImage(BirdX + tabBirds[i].bx, BirdY + tabBirds[i].by, tabBirds[i].b_width, tabBirds[i].b_height, birdBuf); 
+} */
+
+
+void drawTime(TFT_eSPI &tft, unsigned int ttX,  unsigned int ttY, unsigned long ttd) {
+
+  #define DY 13
+  #define FONTn 1
+  char lineBuf[MessageLen];
+
+  unsigned long gameDuration = (millis() - myStat.currentDur) / 1000;
+  unsigned long drawDuration = (millis() - ttd) / 1000;
+  int16_t dy = 0;
+
+  restoreBack(tft, ttX, ttY, catanWidth-ttX-5, 22, catanWidth, catan);
+  // tft.fillRect(ttX, ttY, catanWidth-ttX-5, 22, TFT_BLUE);
+  tft.setTextColor(TFT_WHITE);
+  tft.setTextFont(FONTn);
+  tft.setTextSize(1);
+  snprintf_P(lineBuf, MessageLen, InfoText9, numberOfHours(gameDuration), numberOfMinutes(gameDuration), numberOfSeconds(gameDuration));
+  tft.drawString(lineBuf, ttX, ttY+1, FONTn);
+  dy += DY;
+  snprintf_P(lineBuf, MessageLen, InfoText10, numberOfHours(drawDuration), numberOfMinutes(drawDuration), numberOfSeconds(drawDuration));
+  tft.drawString(lineBuf, ttX, ttY+dy, FONTn);
 }
-
-

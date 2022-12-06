@@ -85,13 +85,18 @@ const char InfoText6[] PROGMEM = "SD Card Error";
 const char InfoText7[] PROGMEM = "Line error: %lu";
 const char InfoText8[] PROGMEM = "SD: %lukB free";
 
+const char  InfoText9[] PROGMEM = "Game: %02u:%02u:%02u";
+const char InfoText10[] PROGMEM = "Draw: %02u:%02u:%02u";
+
+
 #define MessageLen 128 /*length of message*/
-#define BirdD 200
 
 void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab, char* titel);
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, int maxIndex, int deltaIndex);
 void showSDError(TFT_eSPI &tft);
 void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 &myCard);
-void nextBird(TFT_eSPI &tft, unsigned int, unsigned int, unsigned int);
+void restoreBack(TFT_eSPI &tft, unsigned int posX, unsigned int posY, unsigned int b_width, unsigned int b_hight, unsigned int s_width, const unsigned short *sourceBuf);
+// void nextBird(TFT_eSPI &tft, unsigned int, unsigned int, unsigned int);
+void drawTime(TFT_eSPI &tft, unsigned int ttX, unsigned int ttY, unsigned long ttd);
 
 #endif

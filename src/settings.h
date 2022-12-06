@@ -3,8 +3,9 @@
 #define SETTINGS_H
 
 #define screenSaverTimeout 180000UL
-// #define screenSaverTimeout 1000UL
+//#define screenSaverTimeout 2000UL
 
+#define ScreenSaverAnimationDelay 250000U
 
 // how to slow down the real
 const char SlowDownEl = 10;

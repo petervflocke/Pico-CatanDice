@@ -26,6 +26,7 @@ TFT_eSprite scrollText1  = TFT_eSprite(&tft);
 
 ptScheduler  pt_random_waiting_for_press = ptScheduler(PT_TIME_2S);
 ptScheduler  pt_random_display = ptScheduler(PT_TIME_20MS);
+ptScheduler  pt_delay_bird = ptScheduler(ScreenSaverAnimationDelay);
 ptScheduler  pt_song = ptScheduler(1);
 
 // volatile long secuenceN = 0;
@@ -209,19 +210,24 @@ void loop()
     if (current_state == screen_saver) {
       if (current_state != former_state) {
         tft.pushImage(0, 0, catanWidth, catanHeight, catan);
-        birdN = 0;
-        BirdX = random(15, 46);
-        BirdY = random(1, 16);
+        birdN = birdMaxN;
         former_state = current_state;
+        BirdX = 15; // initilaized only for first removal, then random
+        BirdY =  1;
       }
-      if (birdN >= birdMaxN) {
-        birdN = 0;
-        BirdX = random(15, 46);
-        BirdY = random(1, 16);
-      }
-      else {
-        nextBird(tft, BirdX, BirdY, birdN);
-        birdN += 1;
+      if (pt_delay_bird.call()) {
+        if (birdN >= birdMaxN) {
+          restoreBack(tft, BirdX + tabBirds[birdMaxN-1].bx, BirdY + tabBirds[birdMaxN-1].by, tabBirds[birdMaxN-1].b_width, tabBirds[birdMaxN-1].b_height, catanWidth, catan);          
+          birdN = 0;
+          BirdX = random(15, 46);
+          BirdY = random(1, 16);
+        }
+        else {
+          if (birdN > 0) restoreBack(tft, BirdX + tabBirds[birdN-1].bx, BirdY + tabBirds[birdN-1].by, tabBirds[birdN-1].b_width, tabBirds[birdN-1].b_height, catanWidth, catan);
+          tft.pushImage(BirdX + tabBirds[birdN].bx, BirdY + tabBirds[birdN].by, tabBirds[birdN].b_width, tabBirds[birdN].b_height, tabBirds[birdN].bird, TFT_WHITE);
+          drawTime(tft, 65, 100, duration1);
+          birdN += 1;
+        }
       }
     } 
     if ( (current_state == ibacklight) || (current_state == dbacklight) ) {
@@ -267,7 +273,7 @@ void loop()
     else if ( (current_state == random_waiting_for_release) ) {
       // if (first_run) {
       if (current_state != former_state) {
-        duration1 = (millis()-duration1);
+        duration1 = millis()-duration1 + analogRead(analog1);
         seedrnd(duration1, seedL);
         rnd1 = random(1, 7);
         
@@ -305,7 +311,7 @@ void loop()
     }
     else if (current_state == random_slow_down) {
       //tft.pushImage(0, 0, counterWidth, ledSize+1, counter);
-      duration2 = (millis()-duration2)+random(analogRead(analog0));
+      duration2 = millis()-duration2 + analogRead(analog0);
       seedrnd(duration2, seedR);
       rnd2 = random(1, 7);
       #ifdef DEBUG_RANDOM
@@ -614,7 +620,7 @@ void loop()
       scrollText1.deleteSprite();
       tft.pushImage(0, 0, counterWidth, counterHeight, counter);
       delay(100);
-      duration1 = millis()+analogRead(analog1);
+      duration1 = millis();
       // current_state = random_waiting_for_press;
       key_clean();
       key_none();
