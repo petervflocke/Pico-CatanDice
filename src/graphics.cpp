@@ -40,6 +40,21 @@ const unsigned int top_pos = (gHeight-1)*gWidth*6;
   #define sBmlr 11 /* gap between bars */
 
 
+#define BirdD 200
+
+birdStruc tabBirds[] = {
+  {29,  1, bird00_width, bird00_height, bird00},
+  {46,  0, bird01_width, bird01_height, bird01},
+  {59,  3, bird02_width, bird02_height, bird02},
+  {74, 10, bird03_width, bird03_height, bird03},
+  {84, 23, bird04_width, bird04_height, bird04},
+  {69, 39, bird05_width, bird05_height, bird05},
+  {32, 50, bird06_width, bird06_height, bird06},
+  { 2, 33, bird07_width, bird07_height, bird07},
+  { 0, 16, bird08_width, bird08_height, bird08},
+  {13,  6, bird09_width, bird09_height, bird09},
+};
+
 void drawInfoBox(TFT_eSPI &tft) {
   tft.pushImage(0, 0, counterWidth, counterHeight, counter);
   tft.fillRoundRect(sRX+4, sRY+4, sWi, sHi, 5, TFT_BLACK);
@@ -189,13 +204,7 @@ void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 
 /*
  https://forum.arduino.cc/t/arduino-timer-convert-millis-to-days-hours-min/42323
 */
-
-
 }
-
-
-
-
 
 void showSDError(TFT_eSPI &tft) {
   tft.pushImage(SDX, SDY, sdcardiconWidth, sdcardiconHeight, sdcardicon, TFT_WHITE);
@@ -206,6 +215,23 @@ void showSDError(TFT_eSPI &tft) {
   tft.setTextColor(TFT_RED);
   tft.fillRect(SDX1e, SDYe, 45, 16, sdcardback);
   tft.drawString("ERROR", SDX1e, SDYe, 2);
+}
+
+void nextBird(TFT_eSPI &tft, const unsigned int BirdX, const unsigned int BirdY, const unsigned int i) {
+
+  unsigned short birdBuf[MAX_BIRD_SIZE];
+  unsigned int addr = 0;
+  unsigned int startIdx = (BirdY + tabBirds[i].by)*catanWidth + BirdX + tabBirds[i].bx;
+
+  tft.pushImage(BirdX + tabBirds[i].bx, BirdY + tabBirds[i].by, tabBirds[i].b_width, tabBirds[i].b_height, tabBirds[i].bird, TFT_WHITE);
+  delay(BirdD);
+  for (unsigned short sprY = 0; sprY < tabBirds[i].b_height; sprY++) {
+    for (unsigned short sprX = 0; sprX < tabBirds[i].b_width; sprX++) {
+      birdBuf[addr++] = catan[startIdx+sprX];
+    }
+    startIdx += catanWidth;
+  }
+  tft.pushImage(BirdX + tabBirds[i].bx, BirdY + tabBirds[i].by, tabBirds[i].b_width, tabBirds[i].b_height, birdBuf);
 }
 
 

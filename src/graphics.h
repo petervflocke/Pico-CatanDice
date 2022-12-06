@@ -5,8 +5,8 @@
 
 #include "Arduino.h"
 #include "SdFat.h"
-#include "counter.h"
-#include "reelpic.h"
+#include "picData.h"
+// #include "reelpic.h"
 
 // define posistion of the graphic elements
 // position of the left and right reel of digits
@@ -56,6 +56,17 @@ typedef enum {
   sum_of_both
 } BarChartType;
 
+struct birdStruc
+  {
+    const unsigned int bx;
+    const unsigned int by;
+    const unsigned int b_width;
+    const unsigned int b_height;
+    const unsigned short *bird;
+  };
+
+extern birdStruc tabBirds[];
+
 extern const unsigned short *space;
 extern const unsigned short *qq;
 extern const unsigned short *digits[];
@@ -75,10 +86,12 @@ const char InfoText7[] PROGMEM = "Line error: %lu";
 const char InfoText8[] PROGMEM = "SD: %lukB free";
 
 #define MessageLen 128 /*length of message*/
+#define BirdD 200
 
 void drawBarChart(TFT_eSPI &tft, u_int32_t statTabL[], u_int32_t statTabR[], u_int32_t statTabS[], u_int32_t statCnt, BarChartType statTab, char* titel);
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, int maxIndex, int deltaIndex);
 void showSDError(TFT_eSPI &tft);
 void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 &myCard);
+void nextBird(TFT_eSPI &tft, unsigned int, unsigned int, unsigned int);
 
 #endif

@@ -166,7 +166,10 @@ void loop()
   int messageIndex;
   unsigned long screenSaver = 0;
   
-    
+  unsigned int birdN;
+  unsigned int BirdX;
+  unsigned int BirdY;
+
   unsigned long loop_i;
   int loop_j;
   bool loop_z;
@@ -206,9 +209,20 @@ void loop()
     if (current_state == screen_saver) {
       if (current_state != former_state) {
         tft.pushImage(0, 0, catanWidth, catanHeight, catan);
+        birdN = 0;
+        BirdX = random(15, 46);
+        BirdY = random(1, 16);
         former_state = current_state;
       }
-      ;
+      if (birdN >= birdMaxN) {
+        birdN = 0;
+        BirdX = random(15, 46);
+        BirdY = random(1, 16);
+      }
+      else {
+        nextBird(tft, BirdX, BirdY, birdN);
+        birdN += 1;
+      }
     } 
     if ( (current_state == ibacklight) || (current_state == dbacklight) ) {
       if (current_state != former_state) {

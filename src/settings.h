@@ -3,6 +3,8 @@
 #define SETTINGS_H
 
 #define screenSaverTimeout 180000UL
+// #define screenSaverTimeout 1000UL
+
 
 // how to slow down the real
 const char SlowDownEl = 10;
@@ -18,8 +20,5 @@ unsigned int slowdown[SlowDownEl][2]={  // lines to move in one stepo, delay in 
 { 1,  0}, // 8
 { 5,  1}  // 9 SlowDownEl-1
 };
-
-
-
 
 #endif
