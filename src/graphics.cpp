@@ -280,3 +280,23 @@ void drawTime(TFT_eSPI &tft, unsigned int ttX,  unsigned int ttY, unsigned long 
   snprintf_P(lineBuf, MessageLen, InfoText10, numberOfHours(drawDuration), numberOfMinutes(drawDuration), numberOfSeconds(drawDuration));
   tft.drawString(lineBuf, ttX, ttY+dy, FONTn);
 }
+
+void drawInfoText(TFT_eSPI &tft) {
+
+  #define DY 13
+  #define DYS sRY
+  #define FONTn 1
+  char lineBuf[MessageLen];
+  int16_t dy = 0;
+
+
+  drawInfoBox(tft);  
+  tft.setTextColor(TFT_BLACK,TFT_WHITE);
+  tft.setTextFont(FONTn);
+  tft.setTextSize(1);
+  tft.drawString("Brightness", sRX+sXY, DYS+dy, FONTn);
+  dy += DY;
+  tft.drawString("Music", sRX+sXY, DYS+dy, FONTn);
+  dy += DY;
+  tft.drawString("Sound FX", sRX+sXY, DYS+dy, FONTn);
+}

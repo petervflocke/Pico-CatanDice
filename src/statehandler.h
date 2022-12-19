@@ -16,7 +16,8 @@ typedef enum {
   show_statistics_Sum,          
   show_statistics_Single,       
   show_statistics_SumAll,       
-  show_statistics_SingleAll,    
+  show_statistics_SingleAll,
+  show_config,
   wait_in_statistics,           // 10 not used now
   before_waiting_for_press,     
   screen_saver,
