@@ -482,6 +482,8 @@ void loop()
         pt_song.enable();
         noteIndex = 0;
 
+        if (BuzzerPin == GPIO_AUDIO_OUT_LEFT)
+          WavPwmInit(GPIO_AUDIO_OUT_LEFT);
         WavPwmPlayAudio(wavs[rndSum-2]);
         while (WavPwmIsPlaying());
         pt_random_say.reset();        
@@ -501,6 +503,8 @@ void loop()
       u_int32_t framecolor;
       if (pt_random_display.call()) {
         if (pt_random_say.call()) {
+          if (BuzzerPin == GPIO_AUDIO_OUT_LEFT)
+            WavPwmInit(GPIO_AUDIO_OUT_LEFT);
           WavPwmPlayAudio(wavs[rndSum-2]);
         }
         if (rndSum == 7) {
