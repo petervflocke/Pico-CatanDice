@@ -21,11 +21,31 @@
 #include "statehandler.h"
 #include "randomgenerator.h"
 
+#include "WavPwmAudio.h"
+#include "WAVData.h"
+
+ const unsigned short *wavs[]={
+  wav2,
+  wav3,
+  wav4,
+  wav5,
+  wav6,
+  wav7,
+  wav8,
+  wav9,
+  wav10,
+  wav11,
+  wav12
+ };
+#define MAX_COUNT 10
+
+
 TFT_eSPI tft = TFT_eSPI();  
 TFT_eSprite scrollText1  = TFT_eSprite(&tft);
 
 ptScheduler  pt_random_waiting_for_press = ptScheduler(PT_TIME_2S);
 ptScheduler  pt_random_display = ptScheduler(PT_TIME_20MS);
+ptScheduler  pt_random_say = ptScheduler(PT_TIME_4S);
 ptScheduler  pt_delay_bird = ptScheduler(ScreenSaverAnimationDelay);
 ptScheduler  pt_song = ptScheduler(1);
 
@@ -52,6 +72,8 @@ void setup()
   pinMode(pinBut, INPUT_PULLUP);
   pinMode(pinA, INPUT_PULLUP);
   pinMode(pinB, INPUT_PULLUP);
+
+  WavPwmInit(GPIO_AUDIO_OUT_LEFT);
 
   tft.init();   // old tft.begin();
   tft.setRotation(3);  // landscape upside down
@@ -454,18 +476,33 @@ void loop()
         if ( rndSum != 7) {
           pt_song.setSequenceRepetition(Song2Len * 1); // repeat song 1 time
         } else {
-          pt_song.setSequenceRepetition(0); // repeat 4ever
+          pt_song.setSequenceRepetition(Song4Len * 1); // repeat song 1 time or 0 for 4ever
         }
         pt_song.reset();
         pt_song.enable();
         noteIndex = 0;
 
+        WavPwmPlayAudio(wavs[rndSum-2]);
+        while (WavPwmIsPlaying());
+        pt_random_say.reset();        
+        pt_random_say.setSkipSequence(1);
+        pt_random_say.setSequenceRepetition(3);
+        
         former_state = current_state;
+
+        // if ( 1 < rndSum && rndSum < 13 ) {
+        //   WavPwmPlayAudio(wavs[rndSum-2]);
+        //   while (WavPwmIsPlaying());    
+        // }
+
       }       
       // display
       // rndSum = 7;
       u_int32_t framecolor;
       if (pt_random_display.call()) {
+        if (pt_random_say.call()) {
+          WavPwmPlayAudio(wavs[rndSum-2]);
+        }
         if (rndSum == 7) {
           if (resultFrameColor%2) framecolor=TFT_RED;
           else                    framecolor=TFT_WHITE;
