@@ -3,6 +3,11 @@
 #ifndef PICDATA_H_
 #define PICDATA_H_
 
+/*
+All pic data converted with  https://github.com/oleg-codaio/png2c 
+*/
+
+
 #include "Arduino.h"
 
 const uint16_t counterWidth  = 158;
