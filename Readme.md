@@ -3,7 +3,7 @@ https://youtube.com/shorts/isAoaTnkfzQ
 
 # An overengineered Catan Dice pretending to be speaking slot machine
 
-Just to check out what Raspberry Pi Pico can, I created this random generator.
+Just to learn Raspberry Pi Pico, I've created this random generator I use now to play The Settlers of Catan.
 
 ## Main features
 
@@ -13,16 +13,16 @@ Just to check out what Raspberry Pi Pico can, I created this random generator.
     - random time between button pressed
     - value of a two floating ADC inputs
 
-- Dynamicly animate generating the numbers. Here pretend to be a slot machine with some simple sound efects
+- Animate generated numbers. Here pico pretends to be a slot machine with some simple sound efects
 
-- Speak out result
+- Speak out result (showing is boring and pic has a lot of memory for some wav-data)
 
-- Show statistics from this game and all prevoius saved on a sd-card
+- Show statistics from this game and all prevoius saved on a sd-card, to check if it is really [random](https://dilbert.com/strip/2001-10-25). 
 
 
 ## Miscelenius  
 
-- Check 3D folder for enclousure
+- Check 3D folder for enclousure (you may need a file to let usb and sd card in)
 
 - Check docs & wiring folder for schematics and some pictures from DIY
 
