@@ -69,11 +69,13 @@ void setup()
   
   // Prepare pins and buttons handling
   pinMode(LED_PIN, OUTPUT);
+  pinMode(MutePin, OUTPUT);
   pinMode(pinBut, INPUT_PULLUP);
   pinMode(pinA, INPUT_PULLUP);
   pinMode(pinB, INPUT_PULLUP);
 
   WavPwmInit(GPIO_AUDIO_OUT_LEFT);
+  digitalWrite(MutePin, 0); // unmute amplifier
 
   tft.init();   // old tft.begin();
   tft.setRotation(3);  // landscape upside down
@@ -476,7 +478,7 @@ void loop()
         if ( rndSum != 7) {
           pt_song.setSequenceRepetition(Song2Len * 1); // repeat song 1 time
         } else {
-          pt_song.setSequenceRepetition(Song4Len * 1); // repeat song 1 time or 0 for 4ever
+          pt_song.setSequenceRepetition(Song4Len * 2); // repeat song 1 time or 0 for 4ever
         }
         pt_song.reset();
         pt_song.enable();
@@ -485,7 +487,6 @@ void loop()
         if (BuzzerPin == GPIO_AUDIO_OUT_LEFT)
           WavPwmInit(GPIO_AUDIO_OUT_LEFT);
         WavPwmPlayAudio(wavs[rndSum-2]);
-        while (WavPwmIsPlaying());
         pt_random_say.reset();        
         pt_random_say.setSkipSequence(1);
         pt_random_say.setSequenceRepetition(3);
@@ -503,6 +504,7 @@ void loop()
       u_int32_t framecolor;
       if (pt_random_display.call()) {
         if (pt_random_say.call()) {
+
           if (BuzzerPin == GPIO_AUDIO_OUT_LEFT)
             WavPwmInit(GPIO_AUDIO_OUT_LEFT);
           WavPwmPlayAudio(wavs[rndSum-2]);

@@ -15,7 +15,10 @@ Just to learn Raspberry Pi Pico, I've created this random generator I use now to
 
 - Animate generated numbers. Here pico pretends to be a slot machine with some simple sound efects
 
-- Speak out result (showing is boring and pic has a lot of memory for some wav-data)
+- Speak out result (showing is boring and pic has a lot of memory for some wav-data).
+    - You can use at the same time simple [tone](https://www.arduino.cc/reference/en/language/functions/advanced-io/tone/) function and mix it with wav-data.
+
+    - Wav-data is fully played using DMA, no IRQ no uProcesor cycles, so it does not stop main program. This just a PoC for any other sound efexct in the bacground.
 
 - Show statistics from this game and all prevoius saved on a sd-card, to check if it is really [random](https://dilbert.com/strip/2001-10-25). 
 

@@ -7,6 +7,8 @@
 
 #define ScreenSaverAnimationDelay 250000U
 
+#define MutePin 28
+
 // how to slow down the real
 const char SlowDownEl = 10;
 unsigned int slowdown[SlowDownEl][2]={  // lines to move in one stepo, delay in ms
