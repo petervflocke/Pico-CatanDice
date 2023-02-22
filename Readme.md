@@ -1,7 +1,7 @@
 https://youtube.com/shorts/isAoaTnkfzQ
 
 
-# An overingeenered Catan Dice pretending to be speaking slot machine
+# An overengineered Catan Dice pretending to be speaking slot machine
 
 Just to check out what Raspberry Pi Pico can, I created this random generator.
 
