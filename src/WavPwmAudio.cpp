@@ -70,12 +70,12 @@ unsigned char WavPwmPlayAudio(const unsigned short WavPwmData[])
    unsigned char Result = false;
    dma_channel_config WavPwmDmaChConfig;
 
-   Serial.println(WavPwmDmaCh);
+   // Serial.println(WavPwmDmaCh);
    WavPwmStopAudio();
    if (dma_channel_is_busy(WavPwmDmaCh)) {
       WavPwmDmaCh = dma_claim_unused_channel(true);
    }  
-   Serial.println(WavPwmDmaCh);
+   // Serial.println(WavPwmDmaCh);
 
    if (!dma_channel_is_busy(WavPwmDmaCh))
    {
