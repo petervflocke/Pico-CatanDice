@@ -25,7 +25,8 @@ Just to learn Raspberry Pi Pico, I've created this random generator I use now to
 
 ## Miscelenius  
 
-- Check 3D folder for enclousure (you may need a file to let usb and sd card in)
+- Check 3D folder for enclousure (you may need a file to let usb and sd card in, in one version)
+    - The top of the enclusure was designed for location of my elements, check pictures to copy it, otherwise your component may not match the 3D model.
 
 - Check docs & wiring folder for schematics and some pictures from DIY
 
