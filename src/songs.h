@@ -5,7 +5,7 @@
 #define SONGS_H
 #include "pitches.h"
 // Either use a separate buzzer on GPIO6
-#define BuzzerPin 6
+#define BuzzerPin 22
 // or use the same speaker as wav PWM output
 // #define BuzzerPin 20
 
