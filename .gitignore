@@ -4,6 +4,6 @@
 .vscode/launch.json
 .vscode/ipch
 *.csv
-PicoCatanDice-backups
-fp-info-cache
+./wiring/PicoCatanDice/PicoCatanDice-backups/*
+./wiring/PicoCatanDice/fp-info-cache
 backup
