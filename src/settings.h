@@ -7,7 +7,8 @@
 
 #define ScreenSaverAnimationDelay 250000U
 
-#define MutePin 28
+#define MutePin  6
+#define BatPin  28
 
 // how to slow down the real
 const char SlowDownEl = 10;

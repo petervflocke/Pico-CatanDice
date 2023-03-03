@@ -74,6 +74,8 @@ void setup()
   pinMode(pinA, INPUT_PULLUP);
   pinMode(pinB, INPUT_PULLUP);
 
+  analogReadResolution(12);
+
   WavPwmInit(GPIO_AUDIO_OUT_LEFT);
   digitalWrite(MutePin, 0); // unmute amplifier
 
@@ -293,6 +295,13 @@ void loop()
         key_clean();
         key_none();
       }
+      /*
+      U(BatPin) = 3.3/4095 = U2
+      U(Volatege devider VBat-R1-BatPin-R2-GND)= ((R1+R2)/R2)*U2
+      R1=553K, R2=991K
+      */
+      // Serial.println ((analogRead(BatPin)*3300)/4095)*16);
+      // Serial.println (analogRead(BatPin)*1289);
     } 
     else if ( (current_state == random_waiting_for_release) ) {
       // if (first_run) {
