@@ -160,7 +160,7 @@ void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, u_int32_t statCnt, int maxInd
 }
 
 
-void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 &myCard) {
+void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 &myCard, double batVol) {
 
   #define DY 13
   #define DYS sRY
@@ -183,10 +183,10 @@ void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 
   snprintf_P(lineBuf, MessageLen, InfoText3, elapsedDays(allDuration), numberOfHours(allDuration), numberOfMinutes(allDuration), numberOfSeconds(allDuration));
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;
-  snprintf_P(lineBuf, MessageLen, InfoText4, myStat.numberGames);
+  snprintf_P(lineBuf, MessageLen, InfoText4, myStat.numberGames, myStat.numberDraws);
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;
-  snprintf_P(lineBuf, MessageLen, InfoText5, myStat.numberDraws);
+  snprintf_P(lineBuf, MessageLen, InfoText5, batVol);
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;  
   if (sdCardOK) {

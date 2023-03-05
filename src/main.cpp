@@ -20,6 +20,7 @@
 #include "keyhandler.h"
 #include "statehandler.h"
 #include "randomgenerator.h"
+#include "runningaverage.h"
 
 #include "WavPwmAudio.h"
 #include "WAVData.h"
@@ -60,6 +61,8 @@ boolean sdCardOK;
 int noteIndex;
 state_type stateTable[stateNumber][eventNumber];
 
+RunningAverage ra;
+
 void setup()
 {
   Serial.begin(115200);
@@ -75,6 +78,10 @@ void setup()
   pinMode(pinB, INPUT_PULLUP);
 
   analogReadResolution(12);
+  for (int i = 0; i < maxSample; i++) {
+    ra.addValue(analogRead(BatPin));
+    delay(10);
+  }
 
   WavPwmInit(GPIO_AUDIO_OUT_LEFT);
   digitalWrite(MutePin, 0); // unmute amplifier
@@ -98,7 +105,7 @@ void setup()
   
   myStat.currentDur = millis();
   if (sdCardOK) {
-    // Serial.println("Start writing to SD");
+  // Serial.println("Start writing to SD");
     sdCardOK = saveResult(1, 0, 0, 0, 0, 0, 0, myStat.currentDur);
   }
 
@@ -232,6 +239,9 @@ void loop()
       former_state = current_state;
     }
 */
+    if (current_state != former_state) {
+      ra.addValue(analogRead(BatPin));
+    }
 
     if (current_state == screen_saver) {
       if (current_state != former_state) {
@@ -301,7 +311,7 @@ void loop()
       R1=553K, R2=991K
       */
       // Serial.println ((analogRead(BatPin)*3300)/4095)*16);
-      // Serial.println (analogRead(BatPin)*1289);
+      // Serial.println (analogRead(A2)*1289);
     } 
     else if ( (current_state == random_waiting_for_release) ) {
       // if (first_run) {
@@ -659,7 +669,20 @@ void loop()
     else if (current_state == show_summury) {
       if (current_state != former_state) {
         pt_song.disable();
-        drawInfoText(tft, rnd1, rnd2, statCnt, sd);
+
+/*       
+        int ac2 = analogRead(BatPin);
+        unsigned int batVol = ra.addValue(ac2);
+        Serial.print("AC=");
+        Serial.print(ac2);
+        Serial.print(" Average=");
+        Serial.print(batVol);
+        Serial.print(" Bat =");
+        Serial.println((batVol*132.692871094)/100000.00);
+  */
+        unsigned int batVol = ra.addValue(analogRead(BatPin));
+        if (batVol < 500) batVol = 0; 
+        drawInfoText(tft, rnd1, rnd2, statCnt, sd, (batVol*132.692871094)/100000); 
         former_state = current_state;
       } 
       delay(100);
