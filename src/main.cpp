@@ -191,8 +191,8 @@ void loop()
   int scrollDelay;
   int steps;
 
-  int rnd1; 
-  int rnd2;
+  int rnd1=0; 
+  int rnd2=0;
   uint32_t seedL;
   uint32_t seedR;
   int rndSum;
@@ -561,7 +561,7 @@ void loop()
     }
     else if (current_state == show_statistics) {
 
-      pt_song.disable();
+      // pt_song.disable();
 
       #define KEEP_
       #ifndef KEEP_
@@ -628,7 +628,7 @@ void loop()
     }
     else if (current_state == show_statistics_Single) {
       if (current_state != former_state) {
-        pt_song.disable();
+        // pt_song.disable();
         drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, left_and_Right, "Left & Right Dice");
         former_state = current_state;
       } 
@@ -636,7 +636,7 @@ void loop()
     }
     else if (current_state == show_statistics_Sum) {
       if (current_state != former_state) {
-        pt_song.disable();
+        // pt_song.disable();
         drawBarChart(tft, statTabL, statTabR, statTabS, statCnt, sum_of_both, "Both Dices");
         former_state = current_state;
       } 
@@ -644,7 +644,7 @@ void loop()
     }
     else if (current_state == show_statistics_SingleAll) {
       if (current_state != former_state) {
-        pt_song.disable();
+        // pt_song.disable();
         if (sdCardOK) {
           drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, left_and_Right, "All lefts & rights");
         } else {
@@ -656,7 +656,7 @@ void loop()
     }
     else if (current_state == show_statistics_SumAll) {
       if (current_state != former_state) {
-        pt_song.disable();
+        // pt_song.disable();
         if (sdCardOK) {
           drawBarChart(tft, statTabLg, statTabRg, statTabSg, myStat.numberDraws, sum_of_both, "All both dices");
         } else {
@@ -666,7 +666,7 @@ void loop()
       } 
       delay(100);
     }
-    else if (current_state == show_summury) {
+    else if (current_state == show_summary) {
       if (current_state != former_state) {
         pt_song.disable();
 
@@ -683,6 +683,14 @@ void loop()
         unsigned int batVol = ra.addValue(analogRead(BatPin));
         if (batVol < 500) batVol = 0; 
         drawInfoText(tft, rnd1, rnd2, statCnt, sd, (batVol*132.692871094)/100000); 
+        former_state = current_state;
+      } 
+      delay(100);
+    } 
+
+    else if (current_state == sbacklight) {
+      if (current_state != former_state) {
+        drawBacklight(tft); 
         former_state = current_state;
       } 
       delay(100);

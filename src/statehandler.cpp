@@ -23,39 +23,57 @@ void initState () {
   // current state + button direction => new state
   stateTable[random_waiting_for_press]  [e_down]  =  random_waiting_for_release;
   stateTable[random_waiting_for_press]  [none]    =  screen_saver;
-  stateTable[random_waiting_for_press]  [e_right] =  ibacklight;
-  stateTable[random_waiting_for_press]  [e_left]  =  dbacklight;
-  stateTable[ibacklight]                [none]    =  random_waiting_for_press;
-  stateTable[dbacklight]                [none]    =  random_waiting_for_press;
+
+  stateTable[random_waiting_for_press]  [e_right] =  sbacklight;
+  stateTable[random_waiting_for_press]  [e_left]  =  show_statistics_SumAll;
+
+  // stateTable[show_statistics]           [none]    =  wait_in_statistics;
+
+
+  stateTable[sbacklight]                [e_up]    =  random_waiting_for_press;
+  stateTable[sbacklight]                [e_right] =  show_statistics_Single;
+  stateTable[sbacklight]                [e_left]  =  show_statistics_SumAll;
+
+
+
+  stateTable[show_statistics_Single]    [e_up]    =  random_waiting_for_press;
+  stateTable[show_statistics_Single]    [e_right] =  show_statistics_Sum;
+  stateTable[show_statistics_Single]    [e_left]  =  show_summary;
+  
+  stateTable[show_statistics_Sum]       [e_up]    =  random_waiting_for_press;
+  stateTable[show_statistics_Sum]       [e_right] =  show_statistics_SingleAll;
+  stateTable[show_statistics_Sum]       [e_left]  =  show_statistics_Single;
+
+  stateTable[show_statistics_SingleAll] [e_up]    =  random_waiting_for_press;
+  stateTable[show_statistics_SingleAll] [e_right] =  show_statistics_SumAll;
+  stateTable[show_statistics_SingleAll] [e_left]  =  show_statistics_Sum;
+
+  stateTable[show_statistics_SumAll]    [e_up]    =  random_waiting_for_press;
+  stateTable[show_statistics_SumAll]    [e_right] =  show_summary;
+  stateTable[show_statistics_SumAll]    [e_left]  =  show_statistics_SingleAll;
+
+  stateTable[show_summary]              [e_up]    =  random_waiting_for_press;
+  stateTable[show_summary]              [e_right] =  show_statistics_Single;
+  stateTable[show_summary]              [e_left]  =  show_statistics_SumAll;
+
+
+  // stateTable[random_waiting_for_press]  [e_right] =  ibacklight;
+  // stateTable[random_waiting_for_press]  [e_left]  =  dbacklight;
+  // stateTable[ibacklight]                [none]    =  random_waiting_for_press;
+  // stateTable[dbacklight]                [none]    =  random_waiting_for_press;
 
   stateTable[random_waiting_for_release][e_up]    =  random_slow_down;
   stateTable[random_slow_down]          [none]    =  random_display;
 
   stateTable[random_display]            [e_up]    =  before_waiting_for_press;
-  stateTable[random_display]            [e_right] =  show_statistics_Single; 
-  stateTable[random_display]            [e_left]  =  show_summury;
+  // stateTable[random_display]            [e_right] =  show_statistics_Single; 
+  // stateTable[random_display]            [e_left]  =  show_summary;
 
-  stateTable[show_summury]              [e_up]    =  before_waiting_for_press;
-  stateTable[show_summury]              [e_right] =  show_statistics_Single;
-  stateTable[show_summury]              [e_left]  =  show_statistics_SumAll;
-  
-  stateTable[show_statistics]           [none]    =  wait_in_statistics;
+  // stateTable[random_display]            [e_right] =  ibacklight;
+  // stateTable[random_display]            [e_left]  =  dbacklight;
+  // stateTable[ibacklight]                [none]    =  random_display;
+  // stateTable[dbacklight]                [none]    =  random_display;
 
-  stateTable[show_statistics_Single]    [e_up]    =  before_waiting_for_press;
-  stateTable[show_statistics_Single]    [e_right] =  show_statistics_Sum;
-  stateTable[show_statistics_Single]    [e_left]  =  show_summury;
-  
-  stateTable[show_statistics_Sum]       [e_up]    =  before_waiting_for_press;
-  stateTable[show_statistics_Sum]       [e_right] =  show_statistics_SingleAll;
-  stateTable[show_statistics_Sum]       [e_left]  =  show_statistics_Single;
-
-  stateTable[show_statistics_SingleAll] [e_up]    =  before_waiting_for_press;
-  stateTable[show_statistics_SingleAll] [e_right] =  show_statistics_SumAll;
-  stateTable[show_statistics_SingleAll] [e_left]  =  show_statistics_Sum;
-
-  stateTable[show_statistics_SumAll]    [e_up]    =  before_waiting_for_press;
-  stateTable[show_statistics_SumAll]    [e_right] =  show_summury;
-  stateTable[show_statistics_SumAll]    [e_left]  =  show_statistics_SingleAll;
 
 /*
   stateTable[wait_in_statistics]        [e_up]    =  before_waiting_for_press;

@@ -75,7 +75,7 @@ extern const unsigned short *ptr_start;
 extern const unsigned short *ptr_stop;
 extern const unsigned int top_pos;
 
-const char MessageText1[] PROGMEM = "Press ^ to continue or rotate <--> for statistics. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
+const char MessageText1[] PROGMEM = "Press to continue. [%d] L: %d %.0f%%  |  R: %d %.0f%%  |  S: %d  %.0f%%";
 const char InfoText1[] PROGMEM = "<%lu> : %d+%d=%d";
 const char InfoText2[] PROGMEM = "Cur.Time: %02u:%02u:%02u";
 const char InfoText3[] PROGMEM = "Tot.Time: %02u:%02u:%02u:%02u";
@@ -98,5 +98,6 @@ void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 
 void restoreBack(TFT_eSPI &tft, unsigned int posX, unsigned int posY, unsigned int b_width, unsigned int b_hight, unsigned int s_width, const unsigned short *sourceBuf);
 // void nextBird(TFT_eSPI &tft, unsigned int, unsigned int, unsigned int);
 void drawTime(TFT_eSPI &tft, unsigned int ttX, unsigned int ttY, unsigned long ttd);
+void drawBacklight(TFT_eSPI &tft);
 
 #endif

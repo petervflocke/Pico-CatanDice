@@ -11,7 +11,7 @@ typedef enum {
   random_waiting_for_release,   
   random_slow_down,             
   random_display,               
-  show_summury,
+  show_summary,
   show_statistics,              // 5 not used now
   show_statistics_Sum,          
   show_statistics_Single,       
@@ -23,6 +23,8 @@ typedef enum {
   screen_saver,
   ibacklight,
   dbacklight,
+  sbacklight,                   // show backlight
+  ebacklight,                   // enter backlight
   thened                        
 } state_type;
 #define stateNumber (thened-none+1)

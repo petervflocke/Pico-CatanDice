@@ -117,6 +117,13 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t T
   }
 }
 
+void drawBacklight(TFT_eSPI &tft) {
+  drawInfoBox(tft);
+  tft.drawSmoothArc(80, 64, 40, 35, 45, 360-45, TFT_BLUE, TFT_WHITE, false);
+
+}
+
+
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, u_int32_t statCnt, int maxIndex, int deltaIndex) {
   #define sRX   7 /* stat box upper x*/
   #define sRY  20 /* stat box uper y*/
@@ -174,7 +181,11 @@ void drawInfoText(TFT_eSPI &tft, int rndl, int rndr, unsigned long cnt, SdFat32 
   tft.setTextColor(TFT_BLACK,TFT_WHITE);
   tft.setTextFont(FONTn);
   tft.setTextSize(1);
-  snprintf_P(lineBuf, MessageLen, InfoText1, cnt, rndl, rndr, rndl+rndr);
+  if (rndl == 0 && rndr == 0) {
+      snprintf_P(lineBuf, MessageLen, "Not yet started");
+  } else {
+    snprintf_P(lineBuf, MessageLen, InfoText1, cnt, rndl, rndr, rndl+rndr);
+  }
   tft.drawString(lineBuf, sRX+sXY, DYS+dy, FONTn);
   dy += DY;
   snprintf_P(lineBuf, MessageLen, InfoText2, numberOfHours(currentTime), numberOfMinutes(currentTime), numberOfSeconds(currentTime));
