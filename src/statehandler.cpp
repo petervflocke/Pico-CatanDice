@@ -39,7 +39,7 @@ void initState () {
   
   stateTable[show_statistics_Single]    [e_up]    =  random_waiting_for_press;
   stateTable[show_statistics_Single]    [e_right] =  show_statistics_Sum;
-  stateTable[show_statistics_Single]    [e_left]  =  show_summary;
+  stateTable[show_statistics_Single]    [e_left]  =  sbacklight;
   
   stateTable[show_statistics_Sum]       [e_up]    =  random_waiting_for_press;
   stateTable[show_statistics_Sum]       [e_right] =  show_statistics_SingleAll;
