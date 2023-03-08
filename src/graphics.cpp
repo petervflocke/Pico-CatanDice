@@ -306,12 +306,12 @@ void drawInfoText(TFT_eSPI &tft) {
 }
 
 void drawBacklight(TFT_eSPI &tft, int bl, boolean mode) {
-  #define blX 50
-  #define blY 50
+  #define blX 54
+  #define blY 55
   #define blR 34
   #define blr 20
   #define blA 45
-  #define teY 78
+  #define teY 83
 
   char lineBuf[MessageLen];
   u_int32_t arcColor = (mode? TFT_YELLOW:TFT_BLUE);
@@ -329,9 +329,9 @@ void drawBacklight(TFT_eSPI &tft, int bl, boolean mode) {
 }
 
 void drawBatVol(TFT_eSPI &tft, double batVol) {
-  #define baX 110
-  #define baY 75
-  #define bay 25
+  #define baX 114
+  #define baY 80
+  #define bay 30
   #define baW 20
   #define baw 16
   u_int32_t batColor;

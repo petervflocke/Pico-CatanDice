@@ -29,7 +29,7 @@ void initState () {
 
   stateTable[sbacklight]                [e_up]    =  ebacklight;
   stateTable[sbacklight]                [e_right] =  show_statistics_Single;
-  stateTable[sbacklight]                [e_left]  =  show_summary;
+  stateTable[sbacklight]                [e_left]  =  random_waiting_for_press;
 
   stateTable[ebacklight]                [e_up]    =  sbacklight;
   stateTable[ebacklight]                [e_right] =  ibacklight;
@@ -54,7 +54,7 @@ void initState () {
   stateTable[show_statistics_SumAll]    [e_left]  =  show_statistics_SingleAll;
 
   stateTable[show_summary]              [e_up]    =  random_waiting_for_press;
-  stateTable[show_summary]              [e_right] =  sbacklight;
+  stateTable[show_summary]              [e_right] =  random_waiting_for_press;
   stateTable[show_summary]              [e_left]  =  show_statistics_SumAll;
 
   // stateTable[show_statistics]           [none]    =  wait_in_statistics;
