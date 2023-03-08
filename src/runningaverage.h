@@ -6,7 +6,9 @@ class RunningAverage {
 public:
     RunningAverage() : numValues_(0), sum_(0) {}
 
-    unsigned int addValue(int value) {
+    double addValue(int value) {
+        double batVol;
+
         if (numValues_ < maxSample) {
             // Add value to array if there is space
             values_[numValues_] = value;
@@ -21,8 +23,9 @@ public:
             values_[maxSample-1] = value;
             sum_ = sum_ - removed + value;
         }
-
-        return sum_ / numValues_;
+        batVol = ( (sum_ / numValues_) * 132.692871094)/100000.00;
+        if (batVol < 1) batVol = 0; 
+        return batVol;
     }
 
 private:

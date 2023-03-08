@@ -680,21 +680,33 @@ void loop()
         Serial.print(" Bat =");
         Serial.println((batVol*132.692871094)/100000.00);
   */
-        unsigned int batVol = ra.addValue(analogRead(BatPin));
-        if (batVol < 500) batVol = 0; 
-        drawInfoText(tft, rnd1, rnd2, statCnt, sd, (batVol*132.692871094)/100000); 
+        double batVol = ra.addValue(analogRead(BatPin));
+        drawInfoText(tft, rnd1, rnd2, statCnt, sd, batVol); 
         former_state = current_state;
       } 
       delay(100);
     } 
 
-    else if (current_state == sbacklight) {
+    else if ( current_state == sbacklight) {
+      double batVol = ra.addValue(analogRead(BatPin));
       if (current_state != former_state) {
-        drawBacklight(tft); 
+        drawInfoBox(tft);
+        drawBacklight(tft, backlight, false); 
         former_state = current_state;
-      } 
+        key_clean();
+      }
+      drawBatVol(tft, batVol);
       delay(100);
     } 
+    else if ( current_state == ebacklight) {
+      double batVol = ra.addValue(analogRead(BatPin));
+      if (current_state != former_state) {
+        drawBacklight(tft, backlight, true); 
+        former_state = current_state;
+      }
+      drawBatVol(tft, batVol);
+      delay(100);
+    }     
     else if (current_state == wait_in_statistics) {
       pt_song.disable();
       delay(20);

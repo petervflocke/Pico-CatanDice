@@ -117,13 +117,6 @@ void drawBarChart(TFT_eSPI &tft, u_int32_t TabL[], u_int32_t TabR[], u_int32_t T
   }
 }
 
-void drawBacklight(TFT_eSPI &tft) {
-  drawInfoBox(tft);
-  tft.drawSmoothArc(80, 64, 40, 35, 45, 360-45, TFT_BLUE, TFT_WHITE, false);
-
-}
-
-
 void drawChart(TFT_eSPI &tft, u_int32_t* statTabX, u_int32_t statCnt, int maxIndex, int deltaIndex) {
   #define sRX   7 /* stat box upper x*/
   #define sRY  20 /* stat box uper y*/
@@ -310,4 +303,56 @@ void drawInfoText(TFT_eSPI &tft) {
   tft.drawString("Music", sRX+sXY, DYS+dy, FONTn);
   dy += DY;
   tft.drawString("Sound FX", sRX+sXY, DYS+dy, FONTn);
+}
+
+void drawBacklight(TFT_eSPI &tft, int bl, boolean mode) {
+  #define blX 50
+  #define blY 50
+  #define blR 34
+  #define blr 20
+  #define blA 45
+  #define teY 78
+
+  char lineBuf[MessageLen];
+  u_int32_t arcColor = (mode? TFT_YELLOW:TFT_BLUE);
+  u_int32_t arcEnd = map(bl,1, 16, 45, 360-blA);
+
+  tft.setTextColor(TFT_BLUE,TFT_WHITE);
+  tft.setTextSize(1);
+  snprintf_P(lineBuf, MessageLen, InfoText11, bl);
+  tft.drawCircle(blX, blY, blR+3, arcColor);
+  tft.fillCircle(blX, blY, blR, TFT_WHITE);
+  tft.drawSmoothArc(blX, blY, blR, blr, 45, arcEnd, arcColor, TFT_WHITE, false);
+  tft.drawCentreString(lineBuf, blX, blY-8, FONT2);
+  tft.fillRect(blX-blR-3, teY-2, blX+blR+3, 12, TFT_WHITE);
+  tft.drawCentreString(InfoText12, blX, teY, FONTn);
+}
+
+void drawBatVol(TFT_eSPI &tft, double batVol) {
+  #define baX 110
+  #define baY 75
+  #define bay 25
+  #define baW 20
+  #define baw 16
+  u_int32_t batColor;
+  char lineBuf[MessageLen];
+  double batVolDsp = batVol*100.00/4.15;
+  int32_t currH = map(int(batVolDsp),0, 100, 1, baY-bay-2);
+
+  if (batVolDsp >= 67.0)
+    batColor = TFT_GREEN;
+  else if (batVolDsp >= 33.0)
+      batColor = TFT_YELLOW;
+  else 
+    batColor = TFT_RED;
+
+  tft.setTextColor(TFT_BLUE,TFT_WHITE);
+  tft.setTextSize(1);
+  snprintf_P(lineBuf, MessageLen, InfoText13, batVolDsp);
+  tft.fillRect(baX+baW/2-5, bay-5, baW/2, 5, TFT_BLUE);
+  tft.drawRect(baX, bay, baW, baY-bay, TFT_BLUE);
+  tft.fillRect(baX+2, bay+1, baw, baY-bay-2, TFT_WHITE);
+  tft.fillRect(baX+2, baY-currH-1, baw, currH, batColor);
+  tft.drawCentreString(lineBuf, baX+baW/2, teY, FONTn);
+
 }

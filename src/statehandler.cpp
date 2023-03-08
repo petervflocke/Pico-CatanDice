@@ -25,17 +25,18 @@ void initState () {
   stateTable[random_waiting_for_press]  [none]    =  screen_saver;
 
   stateTable[random_waiting_for_press]  [e_right] =  sbacklight;
-  stateTable[random_waiting_for_press]  [e_left]  =  show_statistics_SumAll;
+  stateTable[random_waiting_for_press]  [e_left]  =  show_summary;
 
-  // stateTable[show_statistics]           [none]    =  wait_in_statistics;
-
-
-  stateTable[sbacklight]                [e_up]    =  random_waiting_for_press;
+  stateTable[sbacklight]                [e_up]    =  ebacklight;
   stateTable[sbacklight]                [e_right] =  show_statistics_Single;
-  stateTable[sbacklight]                [e_left]  =  show_statistics_SumAll;
+  stateTable[sbacklight]                [e_left]  =  show_summary;
 
-
-
+  stateTable[ebacklight]                [e_up]    =  sbacklight;
+  stateTable[ebacklight]                [e_right] =  ibacklight;
+  stateTable[ebacklight]                [e_left]  =  dbacklight;
+  stateTable[ibacklight]                [none]    =  ebacklight;
+  stateTable[dbacklight]                [none]    =  ebacklight;
+  
   stateTable[show_statistics_Single]    [e_up]    =  random_waiting_for_press;
   stateTable[show_statistics_Single]    [e_right] =  show_statistics_Sum;
   stateTable[show_statistics_Single]    [e_left]  =  show_summary;
@@ -53,14 +54,10 @@ void initState () {
   stateTable[show_statistics_SumAll]    [e_left]  =  show_statistics_SingleAll;
 
   stateTable[show_summary]              [e_up]    =  random_waiting_for_press;
-  stateTable[show_summary]              [e_right] =  show_statistics_Single;
+  stateTable[show_summary]              [e_right] =  sbacklight;
   stateTable[show_summary]              [e_left]  =  show_statistics_SumAll;
 
-
-  // stateTable[random_waiting_for_press]  [e_right] =  ibacklight;
-  // stateTable[random_waiting_for_press]  [e_left]  =  dbacklight;
-  // stateTable[ibacklight]                [none]    =  random_waiting_for_press;
-  // stateTable[dbacklight]                [none]    =  random_waiting_for_press;
+  // stateTable[show_statistics]           [none]    =  wait_in_statistics;
 
   stateTable[random_waiting_for_release][e_up]    =  random_slow_down;
   stateTable[random_slow_down]          [none]    =  random_display;
