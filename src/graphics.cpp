@@ -317,6 +317,7 @@ void drawBacklight(TFT_eSPI &tft, int bl, boolean mode) {
   u_int32_t arcColor = (mode? TFT_YELLOW:TFT_BLUE);
   u_int32_t arcEnd = map(bl,1, 16, 45, 360-blA);
 
+  tft.setFreeFont(FF0);
   tft.setTextColor(TFT_BLUE,TFT_WHITE);
   snprintf_P(lineBuf, MessageLen, InfoText11, bl);
   tft.drawCircle(blX, blY, blR+3, arcColor);
@@ -333,11 +334,14 @@ void drawBatVol(TFT_eSPI &tft, double batVol) {
   #define bay 30
   #define baW 20
   #define baw 16
+  #define minLipo 2.70
+  #define maxLipo 4.15
   u_int32_t batColor;
   char lineBuf[MessageLen];
-  double batVolDsp = batVol*100.00/4.15;
+  double batVolDsp = (batVol-minLipo)/(maxLipo-minLipo)*100;
+  batVolDsp = constrain(batVolDsp, 0, 100);
   int32_t currH = map(int(batVolDsp),0, 100, 1, baY-bay-2);
-
+  
   if (batVolDsp >= 67.0)
     batColor = TFT_GREEN;
   else if (batVolDsp >= 33.0)
@@ -345,6 +349,7 @@ void drawBatVol(TFT_eSPI &tft, double batVol) {
   else 
     batColor = TFT_RED;
 
+  tft.setFreeFont(FF0);
   tft.setTextColor(TFT_BLUE,TFT_WHITE);
   snprintf_P(lineBuf, MessageLen, InfoText13, batVolDsp);
   tft.fillRect(baX+baW/2-5, bay-5, baW/2, 5, TFT_BLUE);

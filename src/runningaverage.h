@@ -1,6 +1,16 @@
 #pragma once
 #ifndef RUNNINGAVERAGE_H
 
+/*
+U(BatPin) = 3.3/4095 = U2
+U(Volatege devider VBat-R1-BatPin-R2-GND)= ((R1+R2)/R2)*U2
+R1=553K, R2=991K
+
+Any way last correction can be done on live data measured im system
+*/
+
+
+
 #define maxSample 25
 class RunningAverage {
 public:
@@ -24,7 +34,7 @@ public:
             sum_ = sum_ - removed + value;
         }
         batVol = ( (sum_ / numValues_) * 132.692871094)/100000.00;
-        if (batVol < 1) batVol = 0; 
+        // if (batVol < 0.5) batVol = 0; 
         return batVol;
     }
 

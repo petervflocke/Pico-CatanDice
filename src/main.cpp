@@ -302,16 +302,9 @@ void loop()
 
       if (millis() - screenSaver > screenSaverTimeout) {
         // current_state = screen_saver;
-        key_clean();
-        key_none();
+        key_clean(); // clean keyboard buffer
+        key_none();  // go for none event
       }
-      /*
-      U(BatPin) = 3.3/4095 = U2
-      U(Volatege devider VBat-R1-BatPin-R2-GND)= ((R1+R2)/R2)*U2
-      R1=553K, R2=991K
-      */
-      // Serial.println ((analogRead(BatPin)*3300)/4095)*16);
-      // Serial.println (analogRead(A2)*1289);
     } 
     else if ( (current_state == random_waiting_for_release) ) {
       // if (first_run) {
